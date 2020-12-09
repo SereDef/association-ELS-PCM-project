@@ -14,7 +14,7 @@
 # CHILD-ALLGENERALDATA_07072020.sav, GEDRAGSGROEP_MaternalDrinking_22112016.sav, 
 # MATERNALSMOKING_22112016.sav, GEDRAGSGROEP_MaternalDrinking_22112016.sav, 
 # MOTHERANTHROPOMETRY_18022013.sav, GR1003-BSI D1_22112016.sav, and 
-# BSI 3 years of age_GR1065 G1-GR1066 C1_22112016.sav
+# BSI 3 years of age_GR1065 G1-GR1066 C1_22112016.sav, GR1004-BSI G1_22112016.sav
 
 #### ---------------------------- Dependencies ---------------------------- ####
 
@@ -394,16 +394,17 @@ general_cov_auxiliary = merge(general_cov_auxiliary, m_bmi_5yrs, by = 'mother', 
 
 #-------------------------------------------------------------------------------
 # Maternal and paternal depression during pregnancy and at age 3 
-bsi_pregnancy = readquick('GR1003-BSI D1_22112016.sav')
-bsi_3yrs = readquick('BSI 3 years of age_GR1065 G1-GR1066 C1_22112016.sav')
+bsi_pregnancy_m = readquick('GR1003-BSI D1_22112016.sav') # 9778 obs of 261 vars
+bsi_pregnancy_p = readquick('GR1004-BSI G1_22112016.sav') # 9778 obs of 261 vars
+bsi_3yrs = readquick('BSI 3 years of age_GR1065 G1-GR1066 C1_22112016.sav') # 9897 obs of 49 vars
 
 # Depression during pregnancy
-dep_pregnacy = bsi_pregnancy[, c('idm','dep','dep_d')]
-colnames(dep_pregnacy)[2:3] = c("m_dep_pregnancy","p_dep_pregnacy") # CHECK WITH DATAMANAGEMENT 
-                                                                    # ERROR DEP_P??
-# Merge it with the previous dataset
-general_cov_auxiliary = merge(general_cov_auxiliary, dep_pregnacy, by = 'idm',  all.x = TRUE)
+dep_pregnancy_m = bsi_pregnancy_m[, c('idm','dep')]; colnames(dep_pregnancy_m)[2] = c("m_dep_pregnancy")
+dep_pregnancy_p = bsi_pregnancy_p[, c('idm','dep_p')]; colnames(dep_pregnancy_p)[2] = c("p_dep_pregnancy")
 
+# Merge it with the previous dataset
+general_cov_auxiliary <- Reduce(function(x,y) merge(x = x, y = y, by = 'idm',  all.x = TRUE),
+                                list(general_cov_auxiliary, dep_pregnancy_m, dep_pregnancy_p))
 
 # Depression @ 3y: Items 9, 16, 17, 18, 35, and 50
 d <- data.frame(bsi_3yrs$g0100365, bsi_3yrs$g0100665, bsi_3yrs$g0100765, bsi_3yrs$g0100865, bsi_3yrs$g0101365, bsi_3yrs$g0102165, # mother report
@@ -428,8 +429,9 @@ covariates_and_auxiliary <- Reduce(function(x,y) merge(x = x, y = y, by = 'idm',
 PCM_project = merge(PCM_outcome, covariates_and_auxiliary, by = 'idc', all.x = T)
 
 # A bit of a quick and dirty fix to make merging with ELS easier
-colnames(PCM_project)[1] <- toupper(colnames(PCM_project)[1]) # idc
-colnames(PCM_project)[56] <- toupper(colnames(PCM_project)[56]) # idm
+colnames(PCM_project)[which(colnames(PCM_project) == 'idc')] <- toupper('idc')
+colnames(PCM_project)[which(colnames(PCM_project) == 'idm')] <- toupper('idm')
+
 ################################################################################
 #-------------------------------------------------------------------------------
 
