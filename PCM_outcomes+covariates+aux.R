@@ -179,7 +179,7 @@ PCM_outcome <- merge(sex, PCM_outcome, by = 'idc', all.x = T)
 
 # ------------------------------------------------------------------------------
 # Take the standard deviation score of the variables of interest
-PCM_outcome$intern_score_z = scale(PCM_outcome$intern_score)
+PCM_outcome$intern_score_z = as.numeric(scale(PCM_outcome$intern_score))
   # these used the previously defined function that corrects SDSs for sex
 PCM_outcome$fat_mass_z = sex_adjust_scale(PCM_outcome$fat_mass)
 PCM_outcome$sbp_z = sex_adjust_scale(PCM_outcome$sbp)
@@ -380,10 +380,11 @@ general_cov_auxiliary = child_general[,c('idc', 'idm', ### SEX was already inclu
                                'parity',    # parity (used for imputation)
                                'gestbir',   # gestational age at birth (used for imputation)
                                'weight',    # gestational weight (used for imputation)
-                               'bmi_1')]    # maternal BMI during pregnancy (used for imputation)
+                               'bmi_1',     # maternal BMI during pregnancy (used for imputation)
+                               'age_m_v2')] # maternal age at intake (used for imputation) 
 # Again, let's try to keep it user friendly 
-colnames(general_cov_auxiliary)[c(4,8:10)] = c("m_bmi_berore_pregnancy", "gest_age_birth", 
-                                               "gest_weight", "m_bmi_pregnancy")
+colnames(general_cov_auxiliary)[c(4,8:11)] = c("m_bmi_berore_pregnancy", "gest_age_birth", 
+                                               "gest_weight", "m_bmi_pregnancy", "m_age_cont")
 #-------------------------------------------------------------------------------
 # Maternal BMI at age 5 (used for imputation)
 m_anthropometry_5yrs = readquick('MOTHERANTHROPOMETRY_18022013.sav')
@@ -399,8 +400,8 @@ bsi_pregnancy_p = readquick('GR1004-BSI G1_22112016.sav') # 9778 obs of 261 vars
 bsi_3yrs = readquick('BSI 3 years of age_GR1065 G1-GR1066 C1_22112016.sav') # 9897 obs of 49 vars
 
 # Depression during pregnancy
-dep_pregnancy_m = bsi_pregnancy_m[, c('idm','dep')]; colnames(dep_pregnancy_m)[2] = c("m_dep_pregnancy")
-dep_pregnancy_p = bsi_pregnancy_p[, c('idm','dep_p')]; colnames(dep_pregnancy_p)[2] = c("p_dep_pregnancy")
+dep_pregnancy_m = bsi_pregnancy_m[, c('idm','dep')]; colnames(dep_pregnancy_m)[2] = c("m_dep_cont_pregnancy")
+dep_pregnancy_p = bsi_pregnancy_p[, c('idm','dep_p')]; colnames(dep_pregnancy_p)[2] = c("p_dep_cont_pregnancy")
 
 # Merge it with the previous dataset
 general_cov_auxiliary <- Reduce(function(x,y) merge(x = x, y = y, by = 'idm',  all.x = TRUE),
@@ -410,10 +411,10 @@ general_cov_auxiliary <- Reduce(function(x,y) merge(x = x, y = y, by = 'idm',  a
 d <- data.frame(bsi_3yrs$g0100365, bsi_3yrs$g0100665, bsi_3yrs$g0100765, bsi_3yrs$g0100865, bsi_3yrs$g0101365, bsi_3yrs$g0102165, # mother report
                 bsi_3yrs$c0100366, bsi_3yrs$c0100666, bsi_3yrs$c0100766, bsi_3yrs$c0100866, bsi_3yrs$c0101366, bsi_3yrs$c0102166) # father report
 n_items_m <- rowSums(!is.na(d[,1:6])); n_items_p <- rowSums(!is.na(d[,7:12]))
-bsi_3yrs$m_dep_3yrs <- ifelse(n_items_m >= 5, yes = (rowSums(d[,1:6])/n_items_m)-1, no = NA)
-bsi_3yrs$p_dep_3yrs <- ifelse(n_items_p >= 5, yes = (rowSums(d[,7:12])/n_items_p)-1, no = NA)
+bsi_3yrs$m_dep_cont_3yrs <- ifelse(n_items_m >= 5, yes = (rowSums(d[,1:6])/n_items_m)-1, no = NA)
+bsi_3yrs$p_dep_cont_3yrs <- ifelse(n_items_p >= 5, yes = (rowSums(d[,7:12])/n_items_p)-1, no = NA)
 
-dep_3yrs = bsi_3yrs[, c('idc','m_dep_3yrs', 'p_dep_3yrs')]
+dep_3yrs = bsi_3yrs[, c('idc','m_dep_cont_3yrs', 'p_dep_cont_3yrs')]
 # Merge it with the previous dataset
 general_cov_auxiliary = merge(general_cov_auxiliary, dep_3yrs, by = 'idc',  all.x = TRUE)
 
@@ -441,3 +442,4 @@ colnames(PCM_project)[which(colnames(PCM_project) == 'idm')] <- toupper('idm')
 
 # Save the dataset in an .rds file, in the directory where the raw data are stored
 saveRDS(PCM_project, paste(pathtodata,'PCM_allvars.rds'))
+
