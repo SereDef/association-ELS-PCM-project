@@ -114,7 +114,7 @@ internalizing = cbcl[,c('idc',
                 'nmisint_9m', # number of missing values in internalizing scale items
                 'sum_int_9m')] # weighted sum score internalizing scale (allowing 25% missing)
                  # Calculation (based on SPSS script available on the V: drive): 
-                 # if 24 out of 32 item sare available (i.e. 75%), sum of the item
+                 # if 24 out of 32 items are available (i.e. 75%), sum of the item
                  # scores * (32 / 32 - nmisnt_9m). 
 # Let's make it a bit more reader friendly 
 colnames(internalizing)[35:36] <- c("n_missing_intern", "intern_score"); 
@@ -232,30 +232,31 @@ colnames(PCM_outcome)[53:54] <- c("bmi_z_4age","bmi_binned")
 # ------------------------------------------------------------------------------
 #                                     OPTIONAL                                 #
 # Check if relation between these variables and child age is approximately linear
-plot(PCM_outcome$agechild9_visit1, PCM_outcome$fat_mass,
-     main = paste("FAT MASS - AGE (@9y): corr =", cor(PCM_outcome$fat_mass, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
-     xlab = "Age in years", ylab = "Android Fat Mass", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
-plot(PCM_outcome$agechild9_visit1, PCM_outcome$sbp,
-     main = paste("SBP - AGE (@9y): corr =", cor(PCM_outcome$sbp, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
-     xlab = "Age in years", ylab = "Systolic Blood Pressure", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
-plot(PCM_outcome$agechild9_visit1, PCM_outcome$dbp,
-     main = paste("DBP - AGE (@9y): corr =", cor(PCM_outcome$dbp, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
-     xlab = "Age in years", ylab = "Diastolic Blood Pressure", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
-plot(PCM_outcome$agechild9_visit1, PCM_outcome$triglycerides,
-     main = paste("TRIGLYCERIDES - AGE (@9y): corr =", cor(PCM_outcome$triglycerides, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
-     xlab = "Age in years", ylab = "Triglycerides", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
-plot(PCM_outcome$agechild9_visit1, PCM_outcome$hdl_cholesterol,
-     main = paste("HDL-CHOLESTEROL - AGE (@9y): corr =", cor(PCM_outcome$hdl_cholesterol, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
-     xlab = "Age in years", ylab = "HDL - Cholesterol", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
-plot(PCM_outcome$agechild9_visit1, PCM_outcome$insuline,
-     main = paste("INSULINE - AGE (@9y): corr =", cor(PCM_outcome$insuline, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
-     xlab = "Age in years", ylab = "Insuline", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# Annoyingly I cannot use a loop as the plotting dispaly is not very smart 
+# plot(PCM_outcome$agechild9_visit1, PCM_outcome$fat_mass,
+#      main = paste("FAT MASS - AGE (@9y): corr =", cor(PCM_outcome$fat_mass, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
+#      xlab = "Age in years", ylab = "Android Fat Mass", 
+#      col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# plot(PCM_outcome$agechild9_visit1, PCM_outcome$sbp,
+#      main = paste("SBP - AGE (@9y): corr =", cor(PCM_outcome$sbp, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
+#      xlab = "Age in years", ylab = "Systolic Blood Pressure", 
+#      col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# plot(PCM_outcome$agechild9_visit1, PCM_outcome$dbp,
+#      main = paste("DBP - AGE (@9y): corr =", cor(PCM_outcome$dbp, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
+#      xlab = "Age in years", ylab = "Diastolic Blood Pressure", 
+#      col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# plot(PCM_outcome$agechild9_visit1, PCM_outcome$triglycerides,
+#      main = paste("TRIGLYCERIDES - AGE (@9y): corr =", cor(PCM_outcome$triglycerides, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
+#      xlab = "Age in years", ylab = "Triglycerides", 
+#      col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# plot(PCM_outcome$agechild9_visit1, PCM_outcome$hdl_cholesterol,
+#      main = paste("HDL-CHOLESTEROL - AGE (@9y): corr =", cor(PCM_outcome$hdl_cholesterol, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
+#      xlab = "Age in years", ylab = "HDL - Cholesterol", 
+#      col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# plot(PCM_outcome$agechild9_visit1, PCM_outcome$insuline,
+#      main = paste("INSULINE - AGE (@9y): corr =", cor(PCM_outcome$insuline, PCM_outcome$agechild9_visit1, method = "pearson", use = "complete.obs")),
+#      xlab = "Age in years", ylab = "Insuline", 
+#      col=rgb(1,100,150,150,maxColorValue=255), pch=16)
 
 # ------------------------------------------------------------------------------
 # Let's peak into the correlations between internalizing and cardio-metabolic vars
@@ -270,47 +271,12 @@ test_cor = cor(relevant_vars, method = "pearson", use = "complete.obs")
 better_colors <- colorRampPalette(c("blue", "white", "red"))(n = 299)
 heatmap(test_cor, col = better_colors, Rowv = NA, symm = T, scale = 'none')
 
-# Scatterplots to explore the relations between Internalizing and other physical vars
-                                   # CMR score
+# Scatterplot: Internalizing and CMR score
 plot(relevant_vars$intern_score_z, relevant_vars$cmr_score, 
      main = paste("PCM Outcomes: corr =", round(test_cor[8,1],4)),
      xlab="Internalizing score (z score) ", ylab="Cardio-metabolic risk (z score)", 
      col=rgb(0,100,0,50,maxColorValue=255), pch=16)
-                      # Individual components of the CMR score
-plot(relevant_vars$intern_score_z, relevant_vars$fat_mass_z, 
-     main = paste("INT - FAT MASS: corr =", round(test_cor[2,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Android Fat Mass (z score)", 
-     col=rgb(100,50,50,100,maxColorValue=255), pch=16)
-plot(relevant_vars$intern_score_z, relevant_vars$sbp_z, 
-     main = paste("INT - SBP: corr =", round(test_cor[3,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Systolic Blood Pressure (z score)", 
-     col=rgb(100,50,50,100,maxColorValue=255), pch=16)
-plot(relevant_vars$intern_score_z, relevant_vars$dbp_z, 
-     main = paste("INT - DBP: corr =", round(test_cor[4,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Diastolic Blood Pressure (z score)", 
-     col=rgb(100,50,50,100,maxColorValue=255), pch=16)
-plot(relevant_vars$intern_score_z, relevant_vars$triglycerides_z, 
-     main = paste("INT - TRIGLYCERIDES: corr =", round(test_cor[5,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Triglycerides (z score)", 
-     col=rgb(100,50,50,100,maxColorValue=255), pch=16)
-plot(relevant_vars$intern_score_z, relevant_vars$hdl_cholesterol_z, 
-     main = paste("INT - HDL-CHOLESTEROL: corr =", round(test_cor[6,1],4)),
-     xlab="Internalizing score (z score) ", ylab="HDL - cholesterol (z score)", 
-     col=rgb(100,50,50,100,maxColorValue=255), pch=16)
-plot(relevant_vars$intern_score_z, relevant_vars$insuline_z, 
-     main = paste("INT - INSULINE: corr =", round(test_cor[7,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Insuline (z score)", 
-     col=rgb(100,50,50,100,maxColorValue=255), pch=16)
-                                    # BMI
-plot(relevant_vars$intern_score_z, relevant_vars$bmi_z_4age, 
-     main = paste("INT - BMI (@9y): corr =", round(test_cor[9,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Body Mass Index - 9 yrs (z score)", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
-                                 # Obesity
-plot(relevant_vars$intern_score_z, relevant_vars$bmi_binned, 
-     main = paste("INT - Obesity (@9y): corr =", round(test_cor[10,1],4)),
-     xlab="Internalizing score (z score) ", ylab="Obesity - 9 yrs", 
-     col=rgb(1,100,150,150,maxColorValue=255), pch=16)
+# For more exploratory plot-around, check the jupyter notebook in the multimorbidity folder
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
