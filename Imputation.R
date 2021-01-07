@@ -393,10 +393,11 @@ imputation <- mice(ELS_PCM_essentials, m = 30, maxit = 60,
 
 ### There were no logged events in the imputation. 
 ### Visual inspection of the convergence graphs showed convergence after 20 to 30 iterations.
+plot(imputation)
 
 # Inspecting the distribution of original and imputed data
 # Distribution of observed and imputed values
-#stripplot(imputation, pch = 20, cex = 1.2) # red dots are imputed values
+stripplot(imputation, pch = 20, cex = 1.2) # red dots are imputed values
 # a scatter plot is also useful to spot unusual patterns in two vars
 #xyplot(imputation, pre_life_events ~ post_life_events | .imp, pch = 20, cex = 1.4)
 
@@ -405,7 +406,7 @@ imputation <- mice(ELS_PCM_essentials, m = 30, maxit = 60,
 ################################################################################
 
 # Once we have imputed, let's get the complete dataset and save it 
-ELS_PCM_imputed <- complete(imputation, action = k) # second argument specifies which imputation to use to replace NAs
+ELS_PCM_imputed <- complete(imputation, 30) # second argument specifies which imputation to use to replace NAs
                                                     # action = k retrieves the k*th completed dataset.
 saveRDS(ELS_PCM_imputed, paste(pathtodata,'ELS_PCM_imputed.rds'))
 
