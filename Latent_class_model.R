@@ -13,6 +13,7 @@
 
 library(lavaan) 
 library(semPlot)
+library(car)
 
 # check if the path to the dataset is already in memory, otherwise ask for it. 
 if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to data: ") }
@@ -21,7 +22,21 @@ if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to dat
 # Load the (complete) dataset
 datarisk <- readRDS(paste(pathtodata, 'ELS_PCM_imputed.rds'))
 
+#------------------------------------------------------------------------------#
+# Check collinearity 
 
+regpost <- lm(postrisk ~ post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization, 
+          data = datarisk)
+regpre <- lm(prerisk ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress, 
+             data = datarisk)
+reg <- lm(els ~ prerisk + postrisk, data = datarisk)
+
+# print out model results
+anova(reg)
+summary(regore)
+
+# test of multicollinearity
+vif(reg)
 ##----------------------------------------------------------------------------##
 ## ------------------------------- ANALYSIS --------------------------------- ##
 ##----------------------------------------------------------------------------##
@@ -34,9 +49,12 @@ datarisk <- readRDS(paste(pathtodata, 'ELS_PCM_imputed.rds'))
 # Basic (un-adjusted) model description
 basic_model <- "
 # Latent prenatal risk
-    prerisk =~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
+    prerisk =~ NA*pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
 # Latent postnatal risk
-    postrisk =~ post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
+    postrisk =~ NA*post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
+# fix variance of pre and postnatal factors to unity
+    postrisk ~~ 1*postrisk
+    prerisk ~~ 1*prerisk
 # Latent overall risk
     els =~ 1*prerisk + 1*postrisk
 # Latent outcome (psycho-cardio-metabolic-risk)
@@ -139,7 +157,92 @@ plot(pfit$els, pfit$pcmr)
 
 # add predicted values to the dataset
 datarisk <- cbind(datarisk, pfit)
+datarisk2 <- cbind(datarisk, pfit$prerisk, pfit$postrisk)
+names(datarisk2)[124:125] = c('prerisk', 'postrisk')
 
 ################################################################################
+# Model using extracted variables 
 
-         
+extr_model <- "
+# Latent overall risk
+    els =~ prerisk + postrisk
+# Latent outcome (psycho-cardio-metabolic-risk)
+    pcmr =~ intern_score_z + fat_mass_z
+# Regressions
+    pcmr ~ els"  # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
+
+fititagain = sem(extr_model, datarisk2)
+summary(fititagain, standardized = TRUE)
+
+semPaths(fititagain, "std", 
+         layout = "tree2", 
+         nCharNodes = 8, # number of characters that are not omitted
+         sizeMan = 7, 
+         sizeMan2 = 5)
+
+################################################################################
+# Model only prenatal 
+pre_model <- "
+# Latent prenatal risk
+    prerisk =~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
+# Latent outcome (psycho-cardio-metabolic-risk)
+    pcmr =~ intern_score_z + fat_mass_z
+# Regressions
+    pcmr ~ prerisk"  # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
+
+fititpre = sem(pre_model, datarisk)
+summary(fititpre, standardized = TRUE)
+
+semPaths(fititpre, "std", 
+         layout = "tree2", 
+         nCharNodes = 8, # number of characters that are not omitted
+         sizeMan = 7, 
+         sizeMan2 = 5)       
+
+################################################################################
+# Model only post
+post_model <- "
+# Latent postnatal risk
+    postrisk =~ post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
+# Latent outcome (psycho-cardio-metabolic-risk)
+    pcmr =~ intern_score_z + fat_mass_z
+# Regressions
+    pcmr ~ postrisk"  # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
+
+fititpost = sem(post_model, datarisk)
+summary(fititpost, standardized = TRUE)
+
+semPaths(fititpost, "std", 
+         layout = "tree2", 
+         nCharNodes = 8, # number of characters that are not omitted
+         sizeMan = 7, 
+         sizeMan2 = 5)       
+
+################################################################################
+# Model mediation 
+med_model <- "
+# Latent prenatal risk
+    prerisk =~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
+# Latent postnatal risk
+    postrisk =~ post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
+# Latent outcome (psycho-cardio-metabolic-risk)
+    pcmr =~ intern_score_z + fat_mass_z
+# direct effect
+    pcmr ~ c*prerisk
+# mediator
+    postrisk ~ a*prerisk
+    pcmr ~ b*postrisk
+# indirect effect (a*b)
+    ab := a*b 
+# total effect
+    total := c + (a*b)"  # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
+
+fitmed = sem(med_model, datarisk)
+summary(fitmed, standardized = TRUE)
+
+semPaths(fitmed, "std", 
+         layout = "tree2", 
+         nCharNodes = 8, # number of characters that are not omitted
+         sizeMan = 7, 
+         sizeMan2 = 5)       
+
