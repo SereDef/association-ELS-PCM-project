@@ -22,12 +22,14 @@
 library(foreign)
 library(stats)
 
-# Define the path to the data
-pathtodata <- readline(prompt="Enter path to data: ")
-# ATTENTION!!! You will be prompted with an "Enter path to data:" message 
-# -> Enter the location of your datafiles. The code assumes that all (raw) data is 
-# stored in ONE folder. Do not forget the final slash in your path, and, speaking of slashes, 
-# beware of OS sensitive changes when you want to modify the structure of your dirs!
+# Defining the path to the data
+# check if the path to the data is already in memory, otherwise ask for it. 
+if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to data: ") }
+
+# ATTENTION!!! If prompted with an "Enter path to data:" message -> Enter the location
+# of your datafiles. The code assumes that all (raw) data is stored in ONE folder.
+# Do not forget the final slash in your path, and, speaking of slashes, beware of 
+# OS sensitive changes when you want to modify the structure of your dirs!
 
 #### ------------------------------ FUNCTIONS ----------------------------- ####
 

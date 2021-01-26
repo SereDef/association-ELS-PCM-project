@@ -52,36 +52,47 @@ basic_model <- "
     prerisk =~ NA*pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
 # Latent postnatal risk
     postrisk =~ NA*post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
-# fix variance of pre and postnatal factors to unity
+# Latent overall risk (pre and postnatal contributions constrained to be equal)
+    els =~ samev*prerisk + samev*postrisk
+# Latent outcome: psycho-cardio-metabolic-risk (mental and physical contributions constrained to be equal)
+    pcmr =~ samev2*intern_score_z + samev2*fat_mass_z
+# fix variance of all latent factors to unity (to standardize)
     postrisk ~~ 1*postrisk
     prerisk ~~ 1*prerisk
-# Latent overall risk
-    els =~ 1*prerisk + 1*postrisk
-# Latent outcome (psycho-cardio-metabolic-risk)
-    pcmr =~ intern_score_z + fat_mass_z
+    els ~~ 1*els
+    pcmr ~~ 1*pcmr
 # Residual correlations
     pre_life_events ~~ post_life_events
     pre_contextual_risk ~~ post_contextual_risk
     pre_personal_stress ~~ post_parental_risk
     pre_interpersonal_stress ~~ post_interpersonal_risk
+    prerisk ~~ postrisk
 # Regressions
-    pcmr ~ els"  # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
+    pcmr ~ els" # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
 
 # Fit the model
-fitit = sem(basic_model, datarisk)
-## Warning message:
-##   In lav_object_post_check(object) :
-##   lavaan WARNING: some estimated lv variances are negative
+fitit = sem(basic_model, datarisk, 
+            std.lv = TRUE) # fix the variances of all the latent variables to unity 
+                           # (factor loadings of the first indicator will no longer be fixed to 1).
+
+# Inspect the parameter’ table, which provides a summary of what parameters are free 
+# in the model (i.e., have to be estimated), and what parameters were requested by the user in the model syntax
+parTable(fitit)
+# ‘user’ refers to a parameter request explicitly in the syntax
+# non-zero values for the ‘free’ column denote parameters that are freely estimated.
+varTable(fitit)
 
 # Inspect the results
-summary(fitit, standardized = TRUE)
-# OR parameterestimates(fitit), to get the unstandardized parameters
+summary(fitit, standardized = TRUE) # OR parameterestimates(fitit), to get the unstandardized parameters
 # OR:
 stres = standardizedsolution(fitit)
 stres[ stres$op == "=~",] # just the loadings (with CIs)
 mean(abs(stres[ stres$op == "=~", "est.std"])) # mean absolute loading 
 stres[ stres$op == "~~" & stres$lhs != stres$rhs, ] # Just correlations
 stres[ stres$op == "~~" & stres$lhs == stres$rhs, ] # Just residual variances
+
+# Free parameters
+coef(fitit)
 
 # Fit measures
 # We select a subset of fit indices, following in Schuurmans et al, approach
@@ -96,7 +107,7 @@ std_fit$lambda # Standardized loadings
 std_fit$psi # Latent variable correlation matrix
 
 ## -------------------------------- Plotting -------------------------------- ##
-semPaths(fitit, "std", 
+semPaths(fitit, what = "std", 
          layout = "tree2", 
          nCharNodes = 8, # number of characters that are not omitted
          sizeMan = 7, 
