@@ -20,7 +20,7 @@ if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to dat
 
 #------------------------------------------------------------------------------#
 # Load the (complete) dataset
-datarisk <- readRDS(paste(pathtodata, 'ELS_PCM_imputed.rds'))
+datarisk <- readRDS(paste(pathtodata, 'ELS_PCM_imputed.rds', sep = ""))
 
 #------------------------------------------------------------------------------#
 # Check collinearity 
@@ -37,6 +37,45 @@ summary(regore)
 
 # test of multicollinearity
 vif(reg)
+
+#------------------------------------------------------------------------------#
+# Check summed scores
+
+datarisk$presum <- rowSums(datarisk[c("pre_life_events","pre_contextual_risk", 
+                                      "pre_personal_stress", "pre_interpersonal_stress")], na.rm = F)
+datarisk$postsum <- rowSums(datarisk[c("post_life_events","post_contextual_risk", 
+                                      "post_parental_risk", "post_interpersonal_risk", 
+                                      "post_direct_victimization")], na.rm = F)
+datarisk$elssum <- rowSums(datarisk[c("presum","postsum")],  na.rm = F)
+datarisk$multisum <- rowSums(datarisk[c("intern_score_z", "fat_mass_z")], na.rm = F)
+
+# simple model: 
+sum_model <- "
+# Latent overall risk (pre and postnatal contributions constrained to be equal)
+#    els =~ same*presum + same*postsum
+# Latent outcome: psycho-cardio-metabolic-risk (mental and physical contributions constrained to be equal)
+    pcmr =~ same*intern_score_z + same*fat_mass_z
+# fix variance of all latent factors to unity (to standardize)
+#    els ~~ 1*els
+    pcmr ~~ 1*pcmr
+# Regressions
+    pcmr ~ els
+    intern_score_z ~ els
+    fat_mass_z ~ els"
+
+# Fit the model
+fitsum = sem(sum_model, datarisk, std.lv = TRUE) # fix the variances of all the latent variables to unity 
+# (factor loadings of the first indicator will no longer be fixed to 1).
+
+summary(fitsum, fit.measures = TRUE, standardized = TRUE) 
+
+##----------------------------------------------------------------------------##
+out_model = "
+pcmr =~ same*intern_score_z + same*fat_mass_z
+pcmr ~~ 1*pcmr"
+fitout = cfa(out_model, datarisk)
+summary(fitout, fit.measures = TRUE, standardized = TRUE)
+
 ##----------------------------------------------------------------------------##
 ## ------------------------------- ANALYSIS --------------------------------- ##
 ##----------------------------------------------------------------------------##
@@ -66,9 +105,10 @@ basic_model <- "
     pre_contextual_risk ~~ post_contextual_risk
     pre_personal_stress ~~ post_parental_risk
     pre_interpersonal_stress ~~ post_interpersonal_risk
-    prerisk ~~ postrisk
 # Regressions
-    pcmr ~ els" # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
+    pcmr ~ els
+    intern_score_z ~ els
+    fat_mass_z ~ els"
 
 # Fit the model
 fitit = sem(basic_model, datarisk, 
@@ -83,7 +123,7 @@ parTable(fitit)
 varTable(fitit)
 
 # Inspect the results
-summary(fitit, standardized = TRUE) # OR parameterestimates(fitit), to get the unstandardized parameters
+summary(fitit, fit.measures = TRUE, standardized = TRUE) # OR parameterestimates(fitit), to get the unstandardized parameters
 # OR:
 stres = standardizedsolution(fitit)
 stres[ stres$op == "=~",] # just the loadings (with CIs)
@@ -233,11 +273,20 @@ semPaths(fititpost, "std",
 # Model mediation 
 med_model <- "
 # Latent prenatal risk
-    prerisk =~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
+    prerisk =~ NA*pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress
 # Latent postnatal risk
-    postrisk =~ post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
+    postrisk =~ NA*post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization
 # Latent outcome (psycho-cardio-metabolic-risk)
-    pcmr =~ intern_score_z + fat_mass_z
+    pcmr =~ samev*intern_score_z + samev*fat_mass_z
+# fix variance of all latent factors to unity (to standardize)
+    postrisk ~~ 1*postrisk
+    prerisk ~~ 1*prerisk
+    pcmr ~~ 1*pcmr 
+# Residual correlations
+    pre_life_events ~~ post_life_events
+    pre_contextual_risk ~~ post_contextual_risk
+    pre_personal_stress ~~ post_parental_risk
+    pre_interpersonal_stress ~~ post_interpersonal_risk
 # direct effect
     pcmr ~ c*prerisk
 # mediator
@@ -248,8 +297,26 @@ med_model <- "
 # total effect
     total := c + (a*b)"  # pcmr ~ intern_score_z  # pcmr ~ fat_mass_z are other alternatives
 
+med_model <- "
+# Latent outcome (psycho-cardio-metabolic-risk)
+    pcmr =~ samev*intern_score_z + samev*fat_mass_z
+# fix variance of all latent factors to unity (to standardize)
+    pcmr ~~ 1*pcmr 
+# direct effect
+    pcmr ~ c*presum
+# mediator
+    postsum ~ a*presum
+    pcmr ~ b*postsum
+# indirect effect (a*b)
+    ab := a*b 
+# total effect
+    total := c + (a*b)" 
+
 fitmed = sem(med_model, datarisk)
 summary(fitmed, standardized = TRUE)
+
+fitmeasures(fitmed, c('chisq', 'df', 'pvalue', 'cfi', 'tli', 
+                     'rmsea', 'rmsea.ci.lower', 'rmsea.ci.upper', 'srmr'))
 
 semPaths(fitmed, "std", 
          layout = "tree2", 
