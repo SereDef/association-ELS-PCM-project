@@ -124,8 +124,8 @@ cat(paste("Well, congrats! Your final dataset includes", after_siblings ,"partic
 ################################################################################
 
 # Compute groups 
-ELS_PCM$int = ifelse(ELS_PCM$intern_score_z > quantile(intern_score_z, probs = 0.8), 1, 0) # 590 risk, 2780 no risk
-ELS_PCM$fat = ifelse(ELS_PCM$fat_mass_z > quantile(fat_mass_z, probs = 0.8), 1, 0) # 674 risk, 2696 no risk
+ELS_PCM$int = ifelse(ELS_PCM$intern_score_z > quantile(ELS_PCM$intern_score_z, probs = 0.8), 1, 0) # 590 risk, 2780 no risk
+ELS_PCM$fat = ifelse(ELS_PCM$fat_mass_z > quantile(ELS_PCM$fat_mass_z, probs = 0.8), 1, 0) # 674 risk, 2696 no risk
 
 ELS_PCM$risk_groups = rep(NA, after_siblings)
 for (i in 1:after_siblings) {
