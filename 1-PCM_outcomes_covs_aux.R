@@ -1,6 +1,6 @@
 
 # Hi there, 
-# the following code is building a dataset will all necessary variables for the analysis
+# the following code is collecting and merging all necessary variables for the analysis
 # of the association between ELS and psycho-cardio-metabolic multi-morbidity in children 
 # This includes the outcomes of interest (internalizing problems and cardio-metabolic
 # risk), the covariates that are going to be used as well as the auxiliary variables 
