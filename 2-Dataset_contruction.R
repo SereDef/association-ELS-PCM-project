@@ -138,6 +138,18 @@ for (i in 1:after_siblings) {
 ELS_PCM$risk_groups = as.factor(ELS_PCM$risk_groups)
 # summary(ELS_PCM$risk_groups)  ##    0    1    2    3 
                                 ## 2272  425  516  158
+# # Let's first factor that bad boy 
+# imp$risk_groups = factor(groups$risk_groups, 
+#                          levels = c(0:3), 
+#                          labels = c("healthy", "internalizing_only", "cardiometabolic_only", "multimorbid"))
+
+# #display groups 
+# attach(groups); plot(intern_score_z, fat_mass_z, 
+#                      col=c("cornflowerblue","darkgrey", "darkgoldenrod2","chartreuse4")[risk_groups]); detach(groups)
+# 
+# #display groups in relation to stress 
+# attach(groups); plot(presum, postsum, 
+#                      col=c("cornflowerblue","darkgrey", "darkgoldenrod2","chartreuse4")[risk_groups]); detach(groups)
 
 ################################################################################
 #### -------------- Construct CUMULATIVE STRESS variables ----------------- ####
