@@ -46,8 +46,8 @@ meth['pre_contextual_risk'] <- "~I( (financial_problems + trouble_pay_pregnancy 
 meth['pre_personal_stress'] <- "~I( (m_age + m_depression_pregnancy + m_anxiety_pregnancy + m_interp_sensitivity_pregnancy + m_violence_people + m_violence_property + m_criminal_record) / 7)"
 meth['pre_interpersonal_stress'] <- "~I( (difficulties_contacts + difficulties_partner + difficulties_family_friend + marital_status_pregnancy + divorce_pregnancy + family_support + family_acceptance + family_affection + family_acception + family_trust + family_painful_feelings + family_decisions + family_conflict + family_decisions_problems + family_plans + family_talk_sadness + family_talk_worries + family_size_pregnancy) / 18)"
 meth['post_life_events'] <- "~I( (sick_or_accident + family_member_ill + smbd_important_ill + parent_died + smbd_important_died + pet_died + school_workload + repeated_grade + lost_smth_important + moved + changed_school + friend_moved + fire_or_burglary) / 13)"
-meth['post_contextual_risk'] <- "~I( (tension_at_work + material_deprivation + financial_difficulties + neiborhood_problems + trouble_pay_childhood + income_once + income_chronic + unemployed_once + unemployed_chronic + m_education + p_education) / 11)"
-meth['post_parental_risk'] <- "~I( (m_age + p_age + m_interpersonal_sensitivity + m_anxiety + m_depression + p_interpersonal_sensitivity + p_depression + p_anxiety) / 8)"
+meth['post_contextual_risk'] <- "~I( (material_deprivation + financial_difficulties + neiborhood_problems + trouble_pay_childhood + income_once + income_chronic + unemployed_once + unemployed_chronic + m_education + p_education) / 10)"
+meth['post_parental_risk'] <- "~I( (tension_at_work + m_age + p_age + m_interpersonal_sensitivity + m_anxiety + m_depression + p_interpersonal_sensitivity + p_depression + p_anxiety) / 9)"
 meth['post_interpersonal_risk'] <- "~I( (conflict_family_member + conflict_smbd_else + conflict_in_family + divorce_childhood + argument_friend + marital_problems + marital_status + family_size + m_fad_5yrs + m_fad_9yrs + p_fad_9yrs) / 11)"
 meth['post_direct_victimization'] <- "~I( (physical_violence + physical_threats + sexual_harrasment + sexual_behavior + rumors_or_gossip + m_harsh_parent + p_harsh_parent + bullying) / 8)"
 
@@ -65,7 +65,7 @@ predictormatrix[, "IDC"] <- predictormatrix["IDC",] <- 0
 # Do not use age_child as a predictor (no reason to believe it is associated with missingness)
 predictormatrix[, "age_child"] <- predictormatrix["age_child",] <- 0
 # Do not use outcome groups as a predictor
-# predictormatrix[, "risk_groups"] <- predictormatrix["risk_groups",] <- 0
+predictormatrix[, "risk_groups"] <- predictormatrix["risk_groups",] <- 0
 
                ### Impute auxiliary variables and covariates ###
 
@@ -80,11 +80,11 @@ predictormatrix[c('sex', 'age_child', 'm_bmi_berore_pregnancy', 'm_smoking', 'm_
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record", # PS
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","marital_status_pregnancy","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic','m_education','p_education', # CR
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic','m_education','p_education', # CR
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
                   'marital_problems','marital_status','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'prenatal_stress', 'postnatal_stress',
                   'sex', 'age_child', 'm_bmi_berore_pregnancy', 'm_smoking', 'm_drinking',
                   'ethnicity', 'parity', 'gest_age_birth', 'gest_weight', 'm_bmi_pregnancy', 'm_bmi_5yrs',
                   'm_dep_cont_pregnancy', 'p_dep_cont_pregnancy', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs', 'm_age_cont' )] <- 0
@@ -113,11 +113,11 @@ predictormatrix[c('family_member_died','friend_relative_died','family_member_ill
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record", # PS
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","marital_status_pregnancy","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'p_education', # CR minus m_education that is auxiliary for prenatal variables
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age', 'p_age', # PR 
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'p_education', # CR minus m_education that is auxiliary for prenatal variables
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age', 'p_age', # PR 
                   'marital_problems','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR minus marital_status that is auxiliary for prenatal variables 
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'pre_life_events', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'pre_life_events', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_pregnancy', 'm_dep_cont_pregnancy', 'p_dep_cont_pregnancy')] <- 0
 # CR domain
 predictormatrix[c("financial_problems", "trouble_pay_pregnancy", "income_reduced", "housing_defects", "housing_adequacy", "housing_basic_living", "m_education_pregnancy"), # CR
@@ -125,11 +125,11 @@ predictormatrix[c("financial_problems", "trouble_pay_pregnancy", "income_reduced
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record", # PS
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","marital_status_pregnancy","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic','p_education', # CR minus m_education that is auxiliary for prenatal variables
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age', 'p_age', # PR 
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic','p_education', # CR minus m_education that is auxiliary for prenatal variables
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age', 'p_age', # PR 
                   'marital_problems','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR minus marital_status that is auxiliary for prenatal variables 
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'pre_contextual_risk', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'pre_contextual_risk', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_pregnancy', 'm_dep_cont_pregnancy', 'p_dep_cont_pregnancy')] <- 0
 
 # PS domain 
@@ -139,11 +139,11 @@ predictormatrix[c("m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sen
                   "financial_problems", "trouble_pay_pregnancy", "income_reduced", "housing_defects", "housing_adequacy", "housing_basic_living","m_education_pregnancy", # CR
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","marital_status_pregnancy","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'p_education', # CR minus m_education that is auxiliary for prenatal variables
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR 
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'p_education', # CR minus m_education that is auxiliary for prenatal variables
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR 
                   'marital_problems','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR  minus marital_status that is auxiliary for prenatal variables
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'pre_personal_stress', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'pre_personal_stress', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_pregnancy', 'm_dep_cont_pregnancy', 'p_dep_cont_pregnancy')] <- 0
 
 # IP domain
@@ -152,11 +152,11 @@ predictormatrix[c("difficulties_contacts","difficulties_partner","difficulties_f
                   "financial_problems", "trouble_pay_pregnancy", "income_reduced", "housing_defects", "housing_adequacy", "housing_basic_living", "m_education_pregnancy", # CR
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record",  # PS
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'p_education', # CR minus m_education that is auxiliary for prenatal variables
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR 
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'p_education', # CR minus m_education that is auxiliary for prenatal variables
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR 
                   'marital_problems','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR  minus marital_status that is auxiliary for prenatal variables
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'pre_interpersonal_stress', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'pre_interpersonal_stress', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_pregnancy', 'm_dep_cont_pregnancy', 'p_dep_cont_pregnancy')] <- 0
   
                                   ### POSTNATAL ###
@@ -167,39 +167,39 @@ predictormatrix[c('sick_or_accident','family_member_ill','smbd_important_ill','p
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record", # PS 
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", 
                    # |-> IS minus "marital_status_pregnancy" that is auxiliary for postnatal variables
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic','m_education','p_education', # CR
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic','m_education','p_education', # CR
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
                   'marital_problems','marital_status','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'post_life_events', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'post_life_events', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_5yrs', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs')] <- 0          
 # CR domain
-predictormatrix[c('tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education'), # CR
+predictormatrix[c('material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education'), # CR
                 c('family_member_died','friend_relative_died', 'family_member_ill_pregnancy','admitted_to_hospital', 'health', 'unemployed', 'work_study_problems','moved_house', 'blood_loss', 'examination', 'baby_worried', 'pregnancy_worried', 'obstetric_care', 'pregnancy_planned', 'victim_robbery', # LE
                   "financial_problems", "trouble_pay_pregnancy", "income_reduced", "housing_defects", "housing_adequacy", "housing_basic_living", # CR minus "m_education_pregnancy" that is auxiliary for postnatal variables
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record", # PS 
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                    # |-> IS minus "marital_status_pregnancy" that is auxiliary for postnatal variables
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
                   'marital_problems','marital_status','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'post_contextual_risk', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'post_contextual_risk', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_5yrs', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs')] <- 0
   
 # PR domain 
 # I did not allow m_education_pregnancy and dep here because of multicollinearity
-predictormatrix[c('m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age'), # PR
+predictormatrix[c('tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age'), # PR
                 c('family_member_died','friend_relative_died', 'family_member_ill_pregnancy','admitted_to_hospital', 'health', 'unemployed', 'work_study_problems','moved_house', 'blood_loss', 'examination', 'baby_worried', 'pregnancy_worried', 'obstetric_care', 'pregnancy_planned', 'victim_robbery', # LE
                   "financial_problems", "trouble_pay_pregnancy", "income_reduced", "housing_defects", "housing_adequacy", "housing_basic_living", # CR minus "m_education_pregnancy" that is auxiliary for postnatal variables
                   "m_depression_pregnancy", "m_anxiety_pregnancy", "m_interp_sensitivity_pregnancy", "m_violence_people", "m_violence_property", "m_criminal_record", # PS 
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                    # |-> IS minus "marital_status_pregnancy" that is auxiliary for postnatal variables
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
                   'marital_problems','marital_status','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'post_parental_risk', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'post_parental_risk', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_5yrs', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs')] <- 0
 
 # IP domain
@@ -210,10 +210,10 @@ predictormatrix[c('marital_problems','marital_status','family_size','m_fad_5yrs'
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                   # |-> IS minus "marital_status_pregnancy" that is auxiliary for postnatal variables
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
                   'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
-                  'post_interpersonal_risk', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'post_interpersonal_risk', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_5yrs', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs')] <- 0
 
 # DV domain
@@ -224,10 +224,10 @@ predictormatrix[c('m_harsh_parent','p_harsh_parent','bullying','physical_violenc
                   "difficulties_contacts","difficulties_partner","difficulties_family_friend","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                    # |-> IS minus "marital_status_pregnancy" that is auxiliary for postnatal variables
                   'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                  'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
-                  'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
+                  'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
+                  'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
                   'marital_problems','marital_status','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR
-                  'post_direct_victimization', 'prenatal_stress', 'postnatal_stress', 'risk_groups',
+                  'post_direct_victimization', 'prenatal_stress', 'postnatal_stress',
                   'm_bmi_berore_pregnancy', 'm_bmi_5yrs', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs')] <- 0
 
 # OPTIONAL :Quickly check the matrix to make sure it looks legit

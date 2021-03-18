@@ -193,8 +193,8 @@ ELS_PCM_essentials = ELS_PCM[, c('IDC',
                 "difficulties_contacts","difficulties_partner","difficulties_family_friend","marital_status_pregnancy","divorce_pregnancy","family_support","family_acceptance","family_affection","family_acception","family_trust","family_painful_feelings","family_decisions","family_conflict","family_decisions_problems","family_plans","family_talk_sadness", "family_talk_worries", "family_size_pregnancy", # IS
                       # all variables for postnatal risk
                 'sick_or_accident','family_member_ill','smbd_important_ill','parent_died','smbd_important_died','pet_died','school_workload','repeated_grade','lost_smth_important','moved','changed_school','friend_moved','fire_or_burglary', # LE
-                'tension_at_work','material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
-                'm_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
+                'material_deprivation','financial_difficulties','neiborhood_problems','trouble_pay_childhood','income_once','income_chronic','unemployed_once','unemployed_chronic', 'm_education','p_education', # CR
+                'tension_at_work','m_interpersonal_sensitivity','p_interpersonal_sensitivity','m_depression','p_depression','m_anxiety','p_anxiety','m_age','p_age', # PR
                 'marital_problems','marital_status','family_size','m_fad_5yrs','m_fad_9yrs','p_fad_9yrs','conflict_family_member','conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend', # IR
                 'm_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment','sexual_behavior','rumors_or_gossip', # DV
                       # all domain scores
