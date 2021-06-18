@@ -188,6 +188,43 @@ cardio_metab$cmr_score <- ifelse(cardio_metab$cmr_miss <= 1,
 # colnames(cardio_metab)[21:22] <- c("bmi_z_4age","bmi_binned")
 
 # ------------------------------------------------------------------------------
+# Simpson paradox? 
+plot(cardio_metab$fat_mass, cardio_metab$agechild9_visit1, 
+     col=c("cornflowerblue", "red")[cardio_metab$sex])
+abline(lm(agechild9_visit1 ~ fat_mass, data = cardio_metab))
+abline(lm(agechild9_visit1 ~ fat_mass, data = cardio_metab[cardio_metab$sex == 1, ]), col = "cornflowerblue")
+abline(lm(agechild9_visit1 ~ fat_mass, data = cardio_metab[cardio_metab$sex == 2, ]), col = "red")
+
+plot(cardio_metab$sbp, cardio_metab$agechild9_visit1, 
+     col=c("cornflowerblue", "red")[cardio_metab$sex])
+abline(lm(agechild9_visit1 ~ sbp, data = cardio_metab))
+abline(lm(agechild9_visit1 ~ sbp, data = cardio_metab[cardio_metab$sex == 1, ]), col = "cornflowerblue")
+abline(lm(agechild9_visit1 ~ sbp, data = cardio_metab[cardio_metab$sex == 2, ]), col = "red")
+
+plot(cardio_metab$dbp, cardio_metab$agechild9_visit1, 
+     col=c("cornflowerblue", "red")[cardio_metab$sex])
+abline(lm(agechild9_visit1 ~ dbp, data = cardio_metab))
+abline(lm(agechild9_visit1 ~ dbp, data = cardio_metab[cardio_metab$sex == 1, ]), col = "cornflowerblue")
+abline(lm(agechild9_visit1 ~ dbp, data = cardio_metab[cardio_metab$sex == 2, ]), col = "red")
+
+plot(cardio_metab$tryglicerides, cardio_metab$agechild9_visit1, 
+     col=c("cornflowerblue", "red")[cardio_metab$sex])
+abline(lm(agechild9_visit1 ~ tryglicerides, data = cardio_metab))
+abline(lm(agechild9_visit1 ~ tryglicerides, data = cardio_metab[cardio_metab$sex == 1, ]), col = "cornflowerblue")
+abline(lm(agechild9_visit1 ~ tryglicerides, data = cardio_metab[cardio_metab$sex == 2, ]), col = "red")
+
+plot(cardio_metab$hdl_cholesterol, cardio_metab$agechild9_visit1, 
+     col=c("cornflowerblue", "red")[cardio_metab$sex])
+abline(lm(agechild9_visit1 ~ hdl_cholesterol, data = cardio_metab))
+abline(lm(agechild9_visit1 ~ hdl_cholesterol, data = cardio_metab[cardio_metab$sex == 1, ]), col = "cornflowerblue")
+abline(lm(agechild9_visit1 ~ hdl_cholesterol, data = cardio_metab[cardio_metab$sex == 2, ]), col = "red")
+
+plot(cardio_metab$insuline, cardio_metab$agechild9_visit1, 
+      col=c("cornflowerblue", "red")[cardio_metab$sex])
+abline(lm(agechild9_visit1 ~ insuline, data = cardio_metab))
+abline(lm(agechild9_visit1 ~ insuline, data = cardio_metab[cardio_metab$sex == 1, ]), col = "cornflowerblue")
+abline(lm(agechild9_visit1 ~ insuline, data = cardio_metab[cardio_metab$sex == 2, ]), col = "red")
+
 
 ################################################################################
 #### --------------------------- save and run ----------------------------- ####

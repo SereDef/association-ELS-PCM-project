@@ -25,6 +25,22 @@ if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to dat
 # Load the list of imputed dataset
 imp <- readRDS(paste(pathtodata,'imputation_list.rds', sep = ""))
 
+# Define a customized function that pools regression results and builds a dataframe 
+# that is easy to read and save
+modeltable <- function(fit, logm = FALSE) {
+  p_fit <- mice::pool(fit) # pool results 
+  mod <- summary(p_fit) # extract relevant information
+  mod$sign <- ifelse(mod$p.value < 0.05, '*', '') # add a column to highlight significant terms
+  if (logm == FALSE) {
+    mod$rsq <- c(pool.r.squared(fit)[1], rep(NA, nrow(mod)-1)) # add a column for R2
+    mod$rsq_adj <- c(pool.r.squared(fit, adjusted = TRUE)[1], rep(NA, nrow(mod)-1)) # adjusted R2
+  } else {
+    levels(mod$y.level) <- c("intern", "fatmas", "multim") # make group comparisons easier to read
+    mod$AIC <- c(mean(p_fit$glanced$AIC), rep(NA, nrow(mod)-1)) # add a column for AIC
+  }
+  return(mod)
+}
+
 ################################################################################
 ################################################################################
 
@@ -34,23 +50,22 @@ imp <- readRDS(paste(pathtodata,'imputation_list.rds', sep = ""))
 
 # There we go:
 #------------------------------ INTERNALIZING ---------------------------------#
-fit_is <- with(imp, lm(intern_score_z ~ prenatal_stress + postnatal_stress + prenatal_stress*postnatal_stress + 
-                       sex + age_child))
-mod1 <- summary(pool(fit_is))
+fit_is <- with(imp, lm(intern_score_z ~ prenatal_stress_z*postnatal_stress_z + sex + age_child))
+mod1 <- modeltable(fit_is)
 
 # Fully adjusted model
-fit_is_full <- with(imp, lm(intern_score_z ~ prenatal_stress + postnatal_stress + prenatal_stress*postnatal_stress + 
-                       sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking))
-mod2 <- summary(pool(fit_is_full))
+fit_is_full <- with(imp, lm(intern_score_z ~ prenatal_stress_z*postnatal_stress_z + sex + age_child + 
+                              m_bmi_berore_pregnancy + m_smoking + m_drinking))
+mod2 <- modeltable(fit_is_full)
+
 
 #------------------------------- FAT MASS -------------------------------------#
-fit_fm <- with(imp, lm(fat_mass_z ~ prenatal_stress + postnatal_stress + prenatal_stress*postnatal_stress + 
-                         sex + age_child))
-mod3 <- summary(pool(fit_fm))
+fit_fm <- with(imp, lm(fat_mass_z ~ prenatal_stress_z*postnatal_stress_z + sex + age_child))
+mod3 <- modeltable(fit_fm)
 
-fit_fm_full <- with(imp, lm(fat_mass_z ~ prenatal_stress + postnatal_stress + prenatal_stress*postnatal_stress + 
-                              sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking))
-mod4 <- summary(pool(fit_fm_full))
+fit_fm_full <- with(imp, lm(fat_mass_z ~ prenatal_stress_z*postnatal_stress_z + sex + age_child + 
+                              m_bmi_berore_pregnancy + m_smoking + m_drinking))
+mod4 <- modeltable(fit_fm_full)
 
 ################################################################################
 ################################################################################
@@ -66,64 +81,37 @@ mod4 <- summary(pool(fit_fm_full))
 
 # Anywho, let's run the model! 
 
-fit_grp <- with(imp, multinom(risk_groups ~ prenatal_stress + postnatal_stress + prenatal_stress*postnatal_stress + 
-                              sex + age_child, model = T))
-mod5 <- summary(pool(fit_grp))
+fit_grp <- with(imp, nnet::multinom(risk_groups ~ prenatal_stress_z*postnatal_stress_z + 
+                                      sex + age_child, model = T));
+mod5 <- modeltable(fit_grp, logm = T)
 
 # Fully adjusted model 
-fit_grp_full <- with(imp, multinom(risk_groups ~ prenatal_stress + postnatal_stress + prenatal_stress*postnatal_stress + 
-                                sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T))
-mod6 <- summary(pool(fit_grp_full))
-
-
-# TODO: R^2 and AIC cannot be extracted using mice pool function. Need to pool those manually
+fit_grp_full <- with(imp, nnet::multinom(risk_groups ~ prenatal_stress_z*postnatal_stress_z + 
+                                sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T));
+mod6 <- modeltable(fit_grp_full, logm = T)
 
 # ------------------------------------------------------------------------------
-# MANUAL ATTEMPT using more classic MLR estimation
-# datalist = complete(imp, "all")
-# 
-# fit_list <- list()
-# 
-# for (df in datalist) { 
-#   # create the dataset for analysis
-#   essential <- df[, c("risk_groups", "prenatal_stress", "postnatal_stress", "sex", "age_child")]
-#   
-#   # we have to reshape the data to a format mlogit likes (re-stacking)
-#   longdata = mlogit.data(essential, choice = "risk_groups", shape = "wide")
-#   
-#   fit <- mlogit(risk_groups ~ 1 | prenatal_stress + postnatal_stress + (prenatal_stress*postnatal_stress) + sex + age_child,  
-#                              data = longdata, reflevel = "0") 
-#   names(fit$coefficients[c(16, 17, 18)]) <- c("interaction:1", "interaction:2", "interaction:3")
-#   
-#   fit_list[[length(fit_list) + 1]] <- fit
-#   }
-# 
-# est_grp = pool(as.mira(fit_list)); summary(est_grp)
 # ------------------------------------------------------------------------------
-
-################################################################################
-################################################################################
-################################################################################
 
 # Finally,
 # Let's have a look at the contribution of individual domains of stress to the probability 
 # of belonging to each group. Again fist a minumally adjusted and then a fully adjusted 
 # model is run. 
 
-fit_grp_dm <- with(imp, multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress +
+fit_grp_dm <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress +
                                  post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization +
                                  sex + age_child, model = T))
-mod7 <- summary(pool(fit_grp_dm))
+mod7 <- modeltable(fit_grp_dm, logm = T)
 
 # Fully adjusted model
-fit_grp_dm <- with(imp, multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress +
+fit_grp_dm_full <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress +
                                    post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization +
-                                   sex + age_child + m_bmi_before_pregnancy, + m_drinking + m_smoking, model = T))
-mod8 <- summary(pool(fit_grp_dm))
+                                   sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T))
+mod8 <- modeltable(fit_grp_dm_full, logm = T)
 
 ################################################################################
 
-# Export the outputs of summary statistics into an xlsx file 
+# Export the outputs of summary statistics into an xlsx file with one model per sheet
 
 modls <- list("1.intern_min" = mod1, "2.intern_ful" = mod2, 
               "3.fatmas_min" = mod3, "4.fatmas_ful" = mod4, 

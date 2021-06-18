@@ -12,9 +12,7 @@
 
 # Point to the necessary libraries
 library(mice);
-
-# This will come in handy for exclusion
-'%notin%' <- Negate('%in%')
+library(miceadds)
 
 # check if the path to the datasets is already in memory, otherwise ask for it. 
 if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to data: ") }
@@ -256,15 +254,26 @@ imputation <- mice(ELSPCM, m = 30, # nr of imputed datasets
 # # A scatter plot is also useful to spot unusual patterns in two vars
 # xyplot(imputation, pre_life_events ~ post_life_events | .imp, pch = 20, cex = 1.4)
 
+
+# Standardize prenatal and postnatal stress to obtain standard betas from regression
+# First temporarily transform mids object into a datalist object
+datlist <- miceadds::mids2datlist(imputation)
+# Scale those bad boyz
+sdatlist <- miceadds::scale_datlist(datlist, orig_var=c('prenatal_stress', 'postnatal_stress'), 
+                                    trafo_var=paste0(c('prenatal_stress', 'postnatal_stress'), "_z") )
+# Reconvert to mids object
+imp <- miceadds::datlist2mids(sdatlist)
+
+
 ################################################################################
 #### ------------------------- complete and save -------------------------- ####
 ################################################################################
 
 # I save the mids object (i.e. list of imputed datasets)
-saveRDS(imputation, paste(pathtodata,'imputation_list.rds', sep = ""))
+saveRDS(imp, paste(pathtodata,'imputation_list.rds', sep = ""))
 
 # I also save the last imputed dataset for sanity checks
-ELS_PCM_imputed <- complete(imputation, 30) 
+ELS_PCM_imputed <- complete(imp, 30) 
 saveRDS(ELS_PCM_imputed, paste(pathtodata,'ELSPCM_imputed.rds', sep = ""))
 
 ################################################################################
