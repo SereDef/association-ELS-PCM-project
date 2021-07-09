@@ -73,9 +73,10 @@ pre_LE <- c('family_member_died','friend_relative_died', 'family_member_ill_preg
             'baby_worried', 'pregnancy_worried', 'obstetric_care', 'pregnancy_planned', 'victim_robbery')
 pre_CR <- c('financial_problems', 'trouble_pay_pregnancy', 'income_reduced', 'housing_defects', 'housing_adequacy', 
             'housing_basic_living', 'm_education_pregnancy')
-pre_PS <- c('m_depression_pregnancy', 'm_anxiety_pregnancy', 'm_interp_sensitivity_pregnancy', 'm_violence_people', 
+pre_PR <- c('m_depression_pregnancy', 'm_anxiety_pregnancy', 'm_interp_sensitivity_pregnancy', 
+            'p_depression_pregnancy', 'p_anxiety_pregnancy', 'p_interp_sensitivity_pregnancy', 'm_violence_people', 
             'm_violence_property', 'm_criminal_record') # without age, as the same variable is already in postnatal PR score
-pre_IS <- c('difficulties_contacts','difficulties_partner','difficulties_family_friend','marital_status_pregnancy',
+pre_IR <- c('difficulties_contacts','difficulties_partner','difficulties_family_friend','marital_status_pregnancy',
             'divorce_pregnancy','family_support','family_acceptance','family_affection','family_acception','family_trust',
             'family_painful_feelings','family_decisions','family_conflict','family_decisions_problems',
             'family_plans','family_talk_sadness', 'family_talk_worries', 'family_size_pregnancy')
@@ -102,11 +103,11 @@ exclusion_criteria <- c('pre_percent_missing', 'post_percent_missing', 'twin', '
 # to the order of the variables in the set (even though this may be a version-specific issue)
 ELSPCM_essentials = ELSPCM[, c('IDC', 
                     # all variables for prenatal risk
-                    pre_LE, pre_CR, pre_PS, pre_IS,
+                    pre_LE, pre_CR, pre_PR, pre_IR,
                     # all variables for postnatal risk
                     post_LE, post_CR, post_PR, post_IR, post_DV,
                     # all domain scores
-                    'pre_life_events', 'pre_contextual_risk', 'pre_personal_stress', 'pre_interpersonal_stress', 
+                    'pre_life_events', 'pre_contextual_risk', 'pre_parental_risk', 'pre_interpersonal_risk', 
                     'post_life_events', 'post_contextual_risk', 'post_parental_risk', 'post_interpersonal_risk', 'post_direct_victimization',
                     # cumulative prenatal and postnatal stress exposure
                     'prenatal_stress', "postnatal_stress",
@@ -142,7 +143,7 @@ step5 <- step4[step4$twin == 0,]
 loss <- nrow(step5) - as.numeric(flowchart[length(flowchart)])
 flowchart <- c(flowchart, no_twin = loss, after_twin_selection = nrow(step5))
 # We are oing to use this later 
-worse_sib_list <- select_sibling(step5, column_selection = c(pre_LE, pre_CR, pre_PS, pre_IS,
+worse_sib_list <- select_sibling(step5, column_selection = c(pre_LE, pre_CR, pre_PR, pre_IR,
                                                              post_LE, post_CR, post_PR, post_IR, post_DV,
                                                              outcomes, covars, auxil))
 
@@ -166,8 +167,8 @@ meth <- make.method(ELSPCM_essentials)
 # derived by the formula specified below.
 meth['pre_life_events'] <- "~I( (family_member_died + friend_relative_died + family_member_ill_pregnancy + admitted_to_hospital + health + unemployed + work_study_problems + moved_house + blood_loss + examination + baby_worried + pregnancy_worried + obstetric_care + pregnancy_planned + victim_robbery) / 15)" 
 meth['pre_contextual_risk'] <- "~I( (financial_problems + trouble_pay_pregnancy + income_reduced + housing_defects + housing_adequacy + housing_basic_living + m_education_pregnancy) / 7)"
-meth['pre_personal_stress'] <- "~I( (m_age + m_depression_pregnancy + m_anxiety_pregnancy + m_interp_sensitivity_pregnancy + m_violence_people + m_violence_property + m_criminal_record) / 7)"
-meth['pre_interpersonal_stress'] <- "~I( (difficulties_contacts + difficulties_partner + difficulties_family_friend + marital_status_pregnancy + divorce_pregnancy + family_support + family_acceptance + family_affection + family_acception + family_trust + family_painful_feelings + family_decisions + family_conflict + family_decisions_problems + family_plans + family_talk_sadness + family_talk_worries + family_size_pregnancy) / 18)"
+meth['pre_parental_risk'] <- "~I( (m_age + m_depression_pregnancy + m_anxiety_pregnancy + m_interp_sensitivity_pregnancy + p_depression_pregnancy + p_anxiety_pregnancy + p_interp_sensitivity_pregnancy + m_violence_people + m_violence_property + m_criminal_record) / 10)"
+meth['pre_interpersonal_risk'] <- "~I( (difficulties_contacts + difficulties_partner + difficulties_family_friend + marital_status_pregnancy + divorce_pregnancy + family_support + family_acceptance + family_affection + family_acception + family_trust + family_painful_feelings + family_decisions + family_conflict + family_decisions_problems + family_plans + family_talk_sadness + family_talk_worries + family_size_pregnancy) / 18)"
 meth['post_life_events'] <- "~I( (sick_or_accident + family_member_ill + smbd_important_ill + parent_died + smbd_important_died + pet_died + school_workload + repeated_grade + lost_smth_important + moved + changed_school + friend_moved + fire_or_burglary) / 13)"
 meth['post_contextual_risk'] <- "~I( (material_deprivation + financial_difficulties + neiborhood_problems + trouble_pay_childhood + income_once + income_chronic + unemployed_once + unemployed_chronic + m_education + p_education) / 10)"
 meth['post_parental_risk'] <- "~I( (tension_at_work + m_age + p_age + m_interpersonal_sensitivity + m_anxiety + m_depression + p_interpersonal_sensitivity + p_depression + p_anxiety) / 9)"
@@ -175,7 +176,7 @@ meth['post_interpersonal_risk'] <- "~I( (conflict_family_member + conflict_smbd_
 meth['post_direct_victimization'] <- "~I( (physical_violence + physical_threats + sexual_harrasment + sexual_behavior + rumors_or_gossip + m_harsh_parent + p_harsh_parent + bullying) / 8)"
 
 # We also use passive imputation for the period specific cumulative ELS scores.
-meth['prenatal_stress'] <- "~I( pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress )"
+meth['prenatal_stress'] <- "~I( pre_life_events + pre_contextual_risk + pre_parental_risk + pre_interpersonal_risk )"
 meth['postnatal_stress'] <- "~I( post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization )"
 
 # We are going to need a different set of predictors for the different variables we impute 
@@ -185,8 +186,8 @@ predictormatrix <- imp0$predictorMatrix
 
 # Do not impute the outcomes 
 predictormatrix[ outcomes , ] <- 0
-# also do not use risk groups as predictor
-predictormatrix[, 'risk_groups' ]  <- 0
+# also do not use risk groups nor cumulative pre and postnatal scores as predictors
+predictormatrix[, c('risk_groups', 'prenatal_stress', 'postnatal_stress') ]  <- 0
 # Do not use IDC, exclusion criteria or age_child as predictor 
 # (no reason to believe age at outcome is associated with missingness)
 predictormatrix[, c("IDC", "age_child", exclusion_criteria)] <- 
@@ -200,9 +201,9 @@ predictormatrix[, c("IDC", "age_child", exclusion_criteria)] <-
 # auxiliary variables would be imputed given the domain scores and the outcomes, 
 # but not by the single items.
 predictormatrix[c(covars, auxil),
-                c(pre_LE, pre_CR, pre_PS, pre_IS,# all variables for prenatal risk
+                c(pre_LE, pre_CR, pre_PR, pre_IR,# all variables for prenatal risk
                   post_LE, post_CR, post_PR, post_IR, post_DV, # all variables for postnatal risk
-                  'prenatal_stress', 'postnatal_stress', covars, auxil )] <- 0
+                  covars, auxil )] <- 0
 
 # All single items are then imputed on the item level. We adjust the predictormatrix 
 # such that we impute the items within a domain score given the other items in that
@@ -224,61 +225,61 @@ predictormatrix[c(covars, auxil),
                                   ### PRENATAL ###
 # LE domain 
 predictormatrix[c(pre_LE), # LE
-                c(pre_CR, pre_PS, pre_IS, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
+                c(pre_CR, pre_PR, pre_IR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables 
-                  'pre_life_events', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy', auxil[1:3])] <- 0
+                  'pre_life_events', 'm_bmi_berore_pregnancy', auxil[1:3])] <- 0
 # CR domain
 predictormatrix[c(pre_CR),
-                c(pre_LE, pre_PS, pre_IS, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
+                c(pre_LE, pre_PR, pre_IR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables
-                  'pre_contextual_risk', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[1:3])] <- 0
+                  'pre_contextual_risk', 'm_bmi_berore_pregnancy',  auxil[1:3])] <- 0
 
-# PS domain 
-predictormatrix[c(pre_PS),
-                c(pre_LE, pre_CR, pre_IS, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
+# PR domain 
+predictormatrix[c(pre_PR),
+                c(pre_LE, pre_CR, pre_IR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables
-                  'pre_personal_stress', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[1:3])] <- 0
+                  'pre_parental_risk', 'm_bmi_berore_pregnancy',  auxil[1:3])] <- 0
 
-# IS domain
-predictormatrix[c(pre_IS),
-                c(pre_LE, pre_CR, pre_PS, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
+# IR domain
+predictormatrix[c(pre_IR),
+                c(pre_LE, pre_CR, pre_PR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables
-                  'pre_interpersonal_stress', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[1:3])] <- 0
+                  'pre_interpersonal_risk', 'm_bmi_berore_pregnancy',  auxil[1:3])] <- 0
   
                                   ### POSTNATAL ###
 # LE domain 
 predictormatrix[c(post_LE),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
-                  pre_PS, pre_IS[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
+                  pre_PR, pre_IR[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_CR, post_PR, post_IR, post_DV,
-                  'post_life_events', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0       
+                  'post_life_events', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0       
 # CR domain
 predictormatrix[c(post_CR),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
-                  pre_PS, pre_IS[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
+                  pre_PR, pre_IR[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_PR, post_IR, post_DV,
-                  'post_contextual_risk', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
+                  'post_contextual_risk', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
   
 # PR domain 
 predictormatrix[c(post_PR),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
-                  pre_PS, pre_IS[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
+                  pre_PR, pre_IR[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_CR, post_IR, post_DV,
-                  'post_parental_risk', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
+                  'post_parental_risk', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
 
 # IR domain
 predictormatrix[c(post_IR),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
-                  pre_PS, pre_IS[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
+                  pre_PR, pre_IR[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_CR, post_PR, post_DV,
-                  'post_interpersonal_risk', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
+                  'post_interpersonal_risk', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
 
 # DV domain
 predictormatrix[c(post_DV),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
-                  pre_PS, pre_IS[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
+                  pre_PR, pre_IR[!pre_CR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_CR, post_PR, post_IR,
-                  'post_direct_victimization', 'prenatal_stress', 'postnatal_stress', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
+                  'post_direct_victimization', 'm_bmi_berore_pregnancy',  auxil[4:6])] <- 0
   
 # OPTIONAL :Quickly check the matrix to make sure it looks legit
 pheatmap::pheatmap(predictormatrix, cluster_rows = F, cluster_cols = F)
@@ -289,8 +290,8 @@ VisSeq <- imp0$visitSequence
 # Run the actual imputation. To ensure convergence among the variables but retain
 # low computational load, we do 60 iterations using 30 imputed datasets (following 
 # Isabel's approach)
-imputation <- mice(ELSPCM_essentials, m = 3, # nr of imputed datasets
-                   maxit = 3, #nr of iteration taken to impute missing values
+imputation <- mice(ELSPCM_essentials, m = 30, # nr of imputed datasets
+                   maxit = 60, #nr of iteration taken to impute missing values
                    seed = 310896, # set a seed for the random number generation in case i need to generate the same dataset again
                    method = meth,
                    visitSequence = VisSeq, 

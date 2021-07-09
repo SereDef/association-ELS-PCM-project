@@ -23,7 +23,7 @@ if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to dat
 # parameters of interest from each imputed dataset and pool the estimates into one.
 
 # Load the list of imputed dataset
-imp <- readRDS(paste(pathtodata,'imputation_list.rds', sep = ""))
+imp <- readRDS(paste(pathtodata,'imputation_list_new.rds', sep = ""))
 
 # Define a customized function that pools regression results and builds a dataframe 
 # that is easy to read and save
@@ -98,13 +98,13 @@ mod6 <- modeltable(fit_grp_full, logm = T)
 # of belonging to each group. Again fist a minumally adjusted and then a fully adjusted 
 # model is run. 
 
-fit_grp_dm <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress +
+fit_grp_dm <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_parental_risk + pre_interpersonal_risk +
                                  post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization +
                                  sex + age_child, model = T))
 mod7 <- modeltable(fit_grp_dm, logm = T)
 
 # Fully adjusted model
-fit_grp_dm_full <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk + pre_personal_stress + pre_interpersonal_stress +
+fit_grp_dm_full <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk +  pre_parental_risk + pre_interpersonal_risk +
                                    post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization +
                                    sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T))
 mod8 <- modeltable(fit_grp_dm_full, logm = T)
@@ -118,7 +118,7 @@ modls <- list("1.intern_min" = mod1, "2.intern_ful" = mod2,
               "5.riskgrp_min" = mod5, "6.riskgrp_ful" = mod6, 
               "7.domains_min" = mod7, "8.domains_ful" = mod8)
 
-write.xlsx(modls, file = paste0(pathtodata, "Results.xlsx"))
+openxlsx::write.xlsx(modls, file = paste0(pathtodata, "Results_new.xlsx"))
 
 
 ################################################################################

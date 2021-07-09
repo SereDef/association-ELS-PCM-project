@@ -51,7 +51,7 @@ ELS_PCM <- Reduce(function(x,y) merge(x = x, y = y, by = c('IDC', 'IDM'), all.x 
 
 # compute sum scores for prenatal and postnatal stress exposure
 ELS_PCM$prenatal_stress <- rowSums(ELS_PCM[,c("pre_life_events","pre_contextual_risk", 
-                                             "pre_personal_stress", "pre_interpersonal_stress")], 
+                                             "pre_parental_risk", "pre_interpersonal_risk")], 
                                    na.rm = F)
 
 ELS_PCM$postnatal_stress <- rowSums(ELS_PCM[,c("post_life_events","post_contextual_risk", 
