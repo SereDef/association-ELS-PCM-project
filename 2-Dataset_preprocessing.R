@@ -15,73 +15,58 @@
 
 # Ok, let's get started!
 
-#### ---------------------------- Dependencies ---------------------------- ####
-
-
-# check if the path to the datasets is already in memory, otherwise ask for it. 
-if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to data: ") }
-
-# define a function that randomly shuffles internalizing and fat mass values and 
-# returns the new size of the "randomly multimorbid" group.
-permute <- function(df) { 
-  # create empty dataset for permutation
-  perm <- data.frame(1:dim(df)[1])
-  
-  perm$new_int <- sample(df$int)
-  perm$new_fat <- sample(df$fat)
-  perm$new_groups <- ifelse(perm$new_int == 0 & perm$new_fat == 0, 0, 
-                            ifelse(perm$new_int == 1 & perm$new_fat == 0, 1, 
-                                   ifelse(perm$new_int == 0 & perm$new_fat == 1, 2, 3)))
-  summary(as.factor(perm$new_groups))[4]
-}
+source('0-Functions.R')
 
 ################################################################################
 # Load datasets
-pre_risk <- readRDS(paste(pathtodata, 'prenatal_stress.rds', sep = ""))
-post_risk <- readRDS(paste(pathtodata, 'postnatal_stress.rds', sep = ""))
-outcome <- readRDS(paste(pathtodata,'PCM_allvars.rds', sep = ""))
+pre_risk  <- readRDS(paste0(pathtodata, 'prenatal_stress.rds'))
+post_risk <- readRDS(paste0(pathtodata, 'postnatal_stress.rds'))
+outcome   <- readRDS(paste0(pathtodata, 'PCM_allvars.rds'))
 
 # merge them
-ELS_PCM <- Reduce(function(x,y) merge(x = x, y = y, by = c('IDC', 'IDM'), all.x = TRUE),
-       list(pre_risk, post_risk, outcome)) 
+ELS_PCM <- Reduce(function(x,y) merge(x = x, y = y, by = c('IDC', 'IDM'), all = T),
+                  list(pre_risk, post_risk, outcome) ) 
 
 ################################################################################
 #### -------------- Construct CUMULATIVE STRESS variables ----------------- ####
 ################################################################################
 
 # compute sum scores for prenatal and postnatal stress exposure
-ELS_PCM$prenatal_stress <- rowSums(ELS_PCM[,c("pre_life_events","pre_contextual_risk", 
-                                             "pre_parental_risk", "pre_interpersonal_risk")], 
-                                   na.rm = F)
+ELS_PCM$prenatal_stress <- rowSums(ELS_PCM[,c("pre_life_events", 
+                                              "pre_contextual_risk", 
+                                              "pre_parental_risk", 
+                                              "pre_interpersonal_risk")], na.rm = F)
 
-ELS_PCM$postnatal_stress <- rowSums(ELS_PCM[,c("post_life_events","post_contextual_risk", 
-                                              "post_parental_risk", "post_interpersonal_risk", 
-                                              "post_direct_victimization")], na.rm = F)
+ELS_PCM$postnatal_stress <- rowSums(ELS_PCM[,c("post_life_events", 
+                                               "post_contextual_risk", 
+                                               "post_parental_risk", 
+                                               "post_interpersonal_risk", 
+                                               "post_direct_victimization")], na.rm = F)
 
 ################################################################################
 #### ------------------- Construct RISK GROUPS variable ------------------- ####
 ################################################################################
 
-# Compute groups 
-ELS_PCM$int = ifelse(ELS_PCM$intern_score_z > quantile(ELS_PCM$intern_score_z, probs = 0.8, na.rm = T), 1, 0) # 590 risk, 2780 no risk
-ELS_PCM$fat = ifelse(ELS_PCM$fat_mass_z > quantile(ELS_PCM$fat_mass_z, probs = 0.8, na.rm = T), 1, 0) # 674 risk, 2696 no risk
+# Compute >80th percentile internalizing and fat mass scores. 
+ELS_PCM$int = ifelse(ELS_PCM$intern_score_z > quantile(ELS_PCM$intern_score_z, probs = 0.8, na.rm = T), 1, 0) #  867 risk, 4055 no risk
+ELS_PCM$fat = ifelse(ELS_PCM$fat_mass_z     > quantile(ELS_PCM$fat_mass_z,     probs = 0.8, na.rm = T), 1, 0) # 1128 risk, 4509 no risk
 
-ELS_PCM$risk_groups = rep(NA, dim(ELS_PCM)[1])
-for (i in 1:dim(ELS_PCM)[1]) {
-  if (is.na(ELS_PCM$int[i]) | is.na(ELS_PCM$fat[i])) {    ELS_PCM$risk_groups[i] = NA
-  } else if (ELS_PCM$int[i] == 0 & ELS_PCM$fat[i] == 0) { ELS_PCM$risk_groups[i] = 0   # healthy
+# Compute groups
+ELS_PCM$risk_groups = rep(NA, nrow(ELS_PCM))
+for (i in 1:nrow(ELS_PCM)) {
+  if (is.na(ELS_PCM$int[i]) | is.na(ELS_PCM$fat[i]))    { ELS_PCM$risk_groups[i] = NA
+  } else if (ELS_PCM$int[i] == 0 & ELS_PCM$fat[i] == 0) { ELS_PCM$risk_groups[i] = 0   # Healthy
   } else if (ELS_PCM$int[i] == 1 & ELS_PCM$fat[i] == 0) { ELS_PCM$risk_groups[i] = 1   # High internalizing  only
   } else if (ELS_PCM$int[i] == 0 & ELS_PCM$fat[i] == 1) { ELS_PCM$risk_groups[i] = 2   # High fat mass only
   } else {                                                ELS_PCM$risk_groups[i] = 3 } # Multimorbid
 }
 
-# # Let's first factor that bad boy 
+# Let's factor that bad boy 
 ELS_PCM$risk_groups = factor(ELS_PCM$risk_groups, 
                          levels = c(0:3), 
                          labels = c("healthy", "internalizing_only", "cardiometabolic_only", "multimorbid"))
 
-# summary(ELS_PCM$risk_groups)  ##    0    1    2    3 
-                                ## 2272  425  516  158
+summary(ELS_PCM$risk_groups)
 
 #------------------------------------------------------------------------------#
 # ------------------------- PERMUTATION TESTING -------------------------------#
@@ -92,12 +77,37 @@ itarations <- 1000
 set.seed(3100896)
 
 for (i in 1:itarations) {
-  if (permute(ELS_PCM) > summary(ELS_PCM$risk_groups)[4]) {
+  origN <- unname(summary(ELS_PCM$risk_groups)[4])
+  randN <- permute(ELS_PCM)
+  if (randN > origN) {
     count <- count + 1
   }
 }
 
-pval = round(count / itarations, 10)
+pval = format(round(count / itarations, 10), nsmall = 3); cat("P-value: ", pval)
+
+# Check the flowchart of sample selection but do not actually perform exclusion, 
+# this will be done after imputation, but we are going to use these numbers as a 
+# sanity check
+finalsample <- flowchart(ELS_PCM, return_selected_sample = T)
+
+summary(finalsample$risk_groups)
+
+# Recompute permutation on the final sample
+count <- 0 
+itarations <- 1000
+set.seed(3100896)
+
+for (i in 1:itarations) {
+  origN <- unname(summary(finalsample$risk_groups)[4])
+  randN <- permute(finalsample)
+  if (randN > origN) {
+    count <- count + 1
+  }
+}
+
+pval = format(round(count / itarations, 10), nsmall = 3); cat("P-value: ", pval)
+
 
 ################################################################################
 ################################################################################
@@ -141,4 +151,4 @@ pval = round(count / itarations, 10)
 ################################################################################
 
 # Save the dataset in an .rds file, in the directory where the raw data are stored
-saveRDS(ELS_PCM, paste(pathtodata,'ELSPCM_dataset.rds', sep =""))
+saveRDS(ELS_PCM, paste0(pathtodata,'ELSPCM_dataset.rds'))
