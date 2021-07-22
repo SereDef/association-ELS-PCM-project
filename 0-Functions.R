@@ -22,7 +22,7 @@ pre_LE <- c('family_member_died','friend_relative_died', 'family_member_ill_preg
             'health', 'unemployed', 'work_study_problems', 'moved_house', 'blood_loss', 'examination', 
             'baby_worried', 'pregnancy_worried', 'obstetric_care', 'pregnancy_planned', 'victim_robbery')
 pre_CR <- c('financial_problems', 'trouble_pay_pregnancy', 'income_reduced', 'housing_defects', 'housing_adequacy', 
-            'housing_basic_living', 'm_education_pregnancy')
+            'housing_basic_living', 'm_education_pregnancy', 'p_education_pregnancy')
 pre_PR <- c('m_depression_pregnancy', 'm_anxiety_pregnancy', 'm_interp_sensitivity_pregnancy', 
             'p_depression_pregnancy', 'p_anxiety_pregnancy', 'p_interp_sensitivity_pregnancy', 'm_violence_people', 
             'm_violence_property', 'm_criminal_record', 'p_criminal_record') # without age, as the same variable is already in postnatal PR score
