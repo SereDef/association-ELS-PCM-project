@@ -72,8 +72,8 @@ fat_mass <- data.frame('IDC' = fatmass$idc,
                        'bmi' = fatmass$bmichild9)
 
 fat_mass$fmi <- fat_mass$tot_fat / (fat_mass$height^2)
-c = cor(fat_mass, use = 'complete.obs')
-hist(fat_mass$fmi)
+# c = cor(fat_mass, use = 'complete.obs')
+# hist(fat_mass$fmi)
 
 ################################################################################
 # merge the two main (mental and physical) outcomes with child sex into one dataset
@@ -83,8 +83,7 @@ PCM_outcome <- merge(internalizing, fat_mass, by = 'IDC',  all = T)
 # Before we can use them in the analysis, the outcome variables need to be standardized. 
 # so, here we take the standard deviation score.
 PCM_outcome$intern_score_z <- as.numeric(scale(PCM_outcome$intern_score))
-PCM_outcome$fat_mass_z     <- as.numeric(scale(PCM_outcome$fat_mass))
-
+# PCM_outcome$fat_mass_z     <- as.numeric(scale(PCM_outcome$fat_mass))
 PCM_outcome$fmi_z     <- as.numeric(scale(PCM_outcome$fmi))
 ################################################################################
 #### ---------------------------- COVARIATES ------------------------------ ####
@@ -114,18 +113,18 @@ PCM_outcome$age_child <- (PCM_outcome$age_child_visit1 + PCM_outcome$age_child_c
 smokingv1 <- readquick("MATERNALSMOKING_22112016.sav") #  9778 obs of 11 variables
 
 smoking <- data.frame('IDM' = smokingv1$idm, 
-                      'm_smoking' = smokingv1$smoke_all ) # (1) never a smoker; 
-                                                          # (2) smoked until pregnancy was known (i.e., first trimester only); 
-                                                          # (3) continued smoking during pregnancy.
+                'm_smoking' = smokingv1$smoke_all ) # (1) never a smoker; 
+                                                    # (2) smoked until pregnancy was known (i.e., first trimester only); 
+                                                    # (3) continued smoking during pregnancy.
 #-------------------------------------------------------------------------------
 ### MATERNAL ALCOHOL CONSUMPTION during pregnancy
 drinkingv1 <- readquick("GEDRAGSGROEP_MaternalDrinking_22112016.sav") # drinkingv2 <- readquick("MATERNALALCOHOL_22112016.sav") # old variable
 
 drinking <- data.frame('IDM' = drinkingv1$idm, 
-                       'm_drinking' = drinkingv1$mdrink_updated) # (0) never; 
-                                                         # (1) until pregnancy was known (i.e., first trimester only); 
-                                                         # (2) continued during pregnancy occasionally;
-                                                         # (3) continued during pregnancy frequently.
+                'm_drinking' = drinkingv1$mdrink_updated) # (0) never; 
+                                                          # (1) until pregnancy was known (i.e., first trimester only); 
+                                                          # (2) continued during pregnancy occasionally;
+                                                          # (3) continued during pregnancy frequently.
 #-------------------------------------------------------------------------------
 ## Other variables
 child_general <- readquick("CHILD-ALLGENERALDATA_07072020.sav") # 9901 obs of 122 
@@ -139,16 +138,16 @@ child_general$ethnicity <- ifelse(is.na(child_general$ethnfv2), NA,
 
 general_cov_aux <- data.frame('IDC' = child_general$idc, 
                               'IDM' = child_general$idm,
-                              'sex'                    = child_general$gender,    ### 1 = boy; 2 = girl.
-                              'ethnicity'              = child_general$ethnicity, ### 0 = Dutch, 1 = non-Dutch
-                              'm_bmi_berore_pregnancy' = child_general$bmi_0,     ### self-reported Maternal BMI
-                              'twin'            = child_general$twin,     # (exclusion criteria)
-                              'mother'          = child_general$mother,   # mother id used to identify siblings (for exclusion)
-                              'parity'          = child_general$parity,   # parity (used for imputation)
-                              'gest_age_birth'  = child_general$gestbir,  # gestational age at birth (used for imputation)
-                              'gest_weight'     = child_general$weight,   # gestational weight (used for imputation)
-                              'm_bmi_pregnancy' = child_general$bmi_1,    # maternal BMI during pregnancy (used for imputation)
-                              'm_age_cont'      = child_general$age_m_v2) # maternal age at intake (used for imputation) 
+                              'sex' = as.factor(child_general$gender),    ### 1 = boy; 2 = girl.
+                        'ethnicity' = as.factor(child_general$ethnicity), ### 0 = Dutch, 1 = non-Dutch
+           'm_bmi_berore_pregnancy' = child_general$bmi_0,     ### self-reported Maternal BMI
+                             'twin' = child_general$twin,      # (exclusion criteria)
+                           'mother' = child_general$mother,    # mother id used to identify siblings (for exclusion)
+                           'parity' = child_general$parity,    # parity (used for imputation)
+                   'gest_age_birth' = child_general$gestbir,   # gestational age at birth (used for imputation)
+                      'gest_weight' = child_general$weight,    # gestational weight (used for imputation)
+                  'm_bmi_pregnancy' = child_general$bmi_1,     # maternal BMI during pregnancy (used for imputation)
+                       'm_age_cont' = child_general$age_m_v2)  # maternal age at intake (used for imputation) 
 
 #-------------------------------------------------------------------------------
 # Maternal and paternal depression during pregnancy and at age 3 
@@ -180,7 +179,7 @@ general_cov_aux <- merge(general_cov_aux, dep_3yrs, by = 'IDC',  all.x = T)
 m_anthropometry_5yrs <- readquick('MOTHERANTHROPOMETRY_18022013.sav')
 
 m_bmi_5yrs <- data.frame('mother' = m_anthropometry_5yrs$mother,
-                         'm_bmi_5yrs' = m_anthropometry_5yrs$bmimotherf5)
+                     'm_bmi_5yrs' = m_anthropometry_5yrs$bmimotherf5)
 
 # Merge with the other general variables
 general_cov_aux <- merge(general_cov_aux, m_bmi_5yrs, by = 'mother', all.x = T, incomparables = NA)

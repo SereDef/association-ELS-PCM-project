@@ -45,9 +45,7 @@ siblings_to_exclude <- flowchart(ELSPCM_essentials)
 
 # We started with a dry run to specify the default arguments.
 imp0 <- mice(ELSPCM_essentials, maxit = 0, 
-             defaultMethod = rep('pmm',4)) # set the imputation method to predictive mean matching (PMM)* 
-             # remove.collinear = F)
-
+             defaultMethod = rep('pmm',4)) # set the imputation method to predictive mean matching (PMM)
 # * PMM imputes a value randomly from a set of observed values whose predicted values 
 #   are closest to the predicted value of the specified regression model. PMM has been 
 #   said to perform quite well under circumstance where the categorical data is sparse 
@@ -57,15 +55,15 @@ meth <- make.method(ELSPCM_essentials)
 # We use passive imputation for the domain scores. This means that the indicator items  
 # are imputed first, and then, using these complete items, mean domain scores are 
 # derived by the formula specified below.
-meth['pre_life_events']           <- "~I( (family_member_died + friend_relative_died + family_member_ill_pregnancy + admitted_to_hospital + health + unemployed + work_study_problems + moved_house + blood_loss + examination + baby_worried + pregnancy_worried + obstetric_care + pregnancy_planned + victim_robbery) / 15)" 
-meth['pre_contextual_risk']       <- "~I( (financial_problems + trouble_pay_pregnancy + income_reduced + housing_defects + housing_adequacy + housing_basic_living + m_education_pregnancy + p_education_pregnancy) / 8)"
-meth['pre_parental_risk']         <- "~I( (m_age + m_depression_pregnancy + m_anxiety_pregnancy + m_interp_sensitivity_pregnancy + p_depression_pregnancy + p_anxiety_pregnancy + p_interp_sensitivity_pregnancy + m_violence_people + m_violence_property + m_criminal_record + p_criminal_record) / 11)"
-meth['pre_interpersonal_risk']    <- "~I( (difficulties_contacts + difficulties_partner + difficulties_family_friend + marital_status_pregnancy + divorce_pregnancy + family_support + family_acceptance + family_affection + family_acception + family_trust + family_painful_feelings + family_decisions + family_conflict + family_decisions_problems + family_plans + family_talk_sadness + family_talk_worries + family_size_pregnancy) / 18)"
-meth['post_life_events']          <- "~I( (sick_or_accident + family_member_ill + smbd_important_ill + parent_died + smbd_important_died + pet_died + school_workload + repeated_grade + lost_smth_important + moved + changed_school + friend_moved + fire_or_burglary) / 13)"
-meth['post_contextual_risk']      <- "~I( (material_deprivation + financial_difficulties + neiborhood_problems + trouble_pay_childhood + income_once + income_chronic + unemployed_once + unemployed_chronic + m_education + p_education) / 10)"
-meth['post_parental_risk']        <- "~I( (tension_at_work + m_age + p_age + m_interpersonal_sensitivity + m_anxiety + m_depression + p_interpersonal_sensitivity + p_depression + p_anxiety) / 9)"
-meth['post_interpersonal_risk']   <- "~I( (conflict_family_member + conflict_smbd_else + conflict_in_family + divorce_childhood + argument_friend + marital_problems + marital_status + family_size + m_fad_5yrs + m_fad_9yrs + p_fad_9yrs) / 11)"
-meth['post_direct_victimization'] <- "~I( (physical_violence + physical_threats + sexual_harrasment + sexual_behavior + rumors_or_gossip + m_harsh_parent + p_harsh_parent + bullying) / 8)"
+meth['pre_life_events']           <- passive_imp_formula(pre_LE)
+meth['pre_contextual_risk']       <- passive_imp_formula(pre_CR)
+meth['pre_parental_risk']         <- passive_imp_formula(pre_PR, add = "m_age")
+meth['pre_interpersonal_risk']    <- passive_imp_formula(pre_IR)
+meth['post_life_events']          <- passive_imp_formula(post_LE)
+meth['post_contextual_risk']      <- passive_imp_formula(post_CR)
+meth['post_parental_risk']        <- passive_imp_formula(post_PR)
+meth['post_interpersonal_risk']   <- passive_imp_formula(post_IR)
+meth['post_direct_victimization'] <- passive_imp_formula(post_DV)
 
 # We also use passive imputation for the period specific cumulative ELS scores.
 meth['prenatal_stress']  <- "~I( pre_life_events + pre_contextual_risk + pre_parental_risk + pre_interpersonal_risk )"
@@ -170,12 +168,14 @@ predictormatrix[c(post_DV),
                   'post_direct_victimization', 'm_bmi_berore_pregnancy', auxil[4:6])] <- 0
   
 # OPTIONAL : Quickly check the matrix to make sure it looks legit
-pheatmap::pheatmap(predictormatrix, cluster_rows = F, cluster_cols = F)
+# pheatmap::pheatmap(predictormatrix, cluster_rows = F, cluster_cols = F)
 
 # visit the sequence
 VisSeq <- imp0$visitSequence
 
 # Run the actual imputation. To ensure convergence among the variables but retain
+
+
 # low computational load, we do 60 iterations using 30 imputed datasets (following 
 # Isabel's approach)
 imputation <- mice(ELSPCM_essentials, m = 30, # nr of imputed datasets
@@ -207,7 +207,7 @@ sdatlist <- miceadds::scale_datlist(post50cutoff, orig_var = c('prenatal_stress'
 post50cutoff <- miceadds::datlist2mids(sdatlist)
 
 out_int      <- miceadds::subset_datlist( post50cutoff, subset = !is.na(post50cutoff$data$intern_score_z),  toclass = 'mids')
-out_fat      <- miceadds::subset_datlist( out_int,      subset = !is.na(out_int$data$fat_mass_z),  toclass = 'mids')
+out_fat      <- miceadds::subset_datlist( out_int,      subset = !is.na(out_int$data$fmi_z),  toclass = 'mids') # fat_mass_z
 no_twins     <- miceadds::subset_datlist( out_fat,      subset = out_fat$data$twin == 0,  toclass = 'mids') 
 finalset     <- miceadds::subset_datlist( no_twins,     subset = no_twins$data$IDC %notin% siblings_to_exclude, toclass = 'mids')
 
@@ -216,11 +216,20 @@ finalset     <- miceadds::subset_datlist( no_twins,     subset = no_twins$data$I
 ################################################################################
 
 # I save the mids object (i.e. list of imputed datasets)
+saveRDS(imp, paste0(pathtodata,'imputation_list_full.rds'))
 saveRDS(post50cutoff, paste0(pathtodata,'imputation_list_ELS.rds'))
 saveRDS(finalset, paste0(pathtodata,'imputation_list_ELSPCM.rds'))
 
 # I also save the last imputed dataset for sanity checks
+full_imputed <- complete(imputation, 30) 
+saveRDS(full_imputed, paste0(pathtodata,'full_imputed.rds'))
+
+# I also save the last imputed dataset for sanity checks
 ELS_PCM_imputed <- complete(finalset, 30) 
 saveRDS(ELS_PCM_imputed, paste0(pathtodata,'ELSPCM_imputed.rds'))
+
+# I also save the last imputed dataset for sanity checks
+ELS_imputed <- complete(post50cutoff, 30) 
+saveRDS(ELS_imputed, paste0(pathtodata,'ELS_imputed.rds'))
 
 ################################################################################

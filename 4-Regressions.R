@@ -14,16 +14,16 @@ library(mice);
 library(nnet);
 library(openxlsx)
 
-# check if the path to the dataset is already in memory, otherwise ask for it. 
-if (exists("pathtodata") == F) { pathtodata = readline(prompt="Enter path to data: ") }
+# Load the list of imputed dataset
+if (exists("imp") == F) { 
+  imp_path <- file.choose() # choose the 'imputation_list_ELSPCM.rds' file
+  imp <- readRDS(imp_path)
+}
 
 #------------------------------------------------------------------------------#
 # In the previous step (3-Imputation.R), we created several complete versions of the data 
 # by replacing the missing values with plausible data values. Now we need to estimate the 
 # parameters of interest from each imputed dataset and pool the estimates into one.
-
-# Load the list of imputed dataset
-imp <- readRDS(paste(pathtodata,'imputation_list_new.rds', sep = ""))
 
 # Define a customized function that pools regression results and builds a dataframe 
 # that is easy to read and save
@@ -55,7 +55,7 @@ mod1 <- modeltable(fit_is)
 
 # Fully adjusted model
 fit_is_full <- with(imp, lm(intern_score_z ~ prenatal_stress_z*postnatal_stress_z + sex + age_child + 
-                              m_bmi_berore_pregnancy + m_smoking + m_drinking))
+                              ethnicity +  m_bmi_berore_pregnancy + m_smoking + m_drinking))
 mod2 <- modeltable(fit_is_full)
 
 
@@ -64,7 +64,7 @@ fit_fm <- with(imp, lm(fat_mass_z ~ prenatal_stress_z*postnatal_stress_z + sex +
 mod3 <- modeltable(fit_fm)
 
 fit_fm_full <- with(imp, lm(fat_mass_z ~ prenatal_stress_z*postnatal_stress_z + sex + age_child + 
-                              m_bmi_berore_pregnancy + m_smoking + m_drinking))
+                              ethnicity + m_bmi_berore_pregnancy + m_smoking + m_drinking))
 mod4 <- modeltable(fit_fm_full)
 
 ################################################################################
@@ -87,7 +87,7 @@ mod5 <- modeltable(fit_grp, logm = T)
 
 # Fully adjusted model 
 fit_grp_full <- with(imp, nnet::multinom(risk_groups ~ prenatal_stress_z*postnatal_stress_z + 
-                                sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T));
+                                sex + age_child + ethnicity + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T));
 mod6 <- modeltable(fit_grp_full, logm = T)
 
 # ------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ mod7 <- modeltable(fit_grp_dm, logm = T)
 # Fully adjusted model
 fit_grp_dm_full <- with(imp, nnet::multinom(risk_groups ~ pre_life_events + pre_contextual_risk +  pre_parental_risk + pre_interpersonal_risk +
                                    post_life_events + post_contextual_risk + post_parental_risk + post_interpersonal_risk + post_direct_victimization +
-                                   sex + age_child + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T))
+                                   sex + age_child + ethnicity + m_bmi_berore_pregnancy + m_smoking + m_drinking, model = T))
 mod8 <- modeltable(fit_grp_dm_full, logm = T)
 
 ################################################################################
@@ -118,7 +118,7 @@ modls <- list("1.intern_min" = mod1, "2.intern_ful" = mod2,
               "5.riskgrp_min" = mod5, "6.riskgrp_ful" = mod6, 
               "7.domains_min" = mod7, "8.domains_ful" = mod8)
 
-openxlsx::write.xlsx(modls, file = paste0(pathtodata, "Results_new.xlsx"))
+openxlsx::write.xlsx(modls, file = paste0(imp_path, "Results_new.xlsx"))
 
 
 ################################################################################
