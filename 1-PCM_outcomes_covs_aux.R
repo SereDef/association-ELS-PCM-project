@@ -71,7 +71,7 @@ fat_mass <- data.frame('IDC' = fatmass$idc,
                     'height' = fatmass$heightchild9, 
                        'bmi' = fatmass$bmichild9)
 
-fat_mass$fmi <- fat_mass$tot_fat / (fat_mass$height^2)
+# fat_mass$fmi <- fat_mass$tot_fat / (fat_mass$height^2)
 # c = cor(fat_mass, use = 'complete.obs')
 # hist(fat_mass$fmi)
 
@@ -83,8 +83,9 @@ PCM_outcome <- merge(internalizing, fat_mass, by = 'IDC',  all = T)
 # Before we can use them in the analysis, the outcome variables need to be standardized. 
 # so, here we take the standard deviation score.
 PCM_outcome$intern_score_z <- as.numeric(scale(PCM_outcome$intern_score))
-# PCM_outcome$fat_mass_z     <- as.numeric(scale(PCM_outcome$fat_mass))
-PCM_outcome$fmi_z     <- as.numeric(scale(PCM_outcome$fmi))
+PCM_outcome$fat_mass_z     <- as.numeric(scale(PCM_outcome$fat_mass))
+# PCM_outcome$fmi_z     <- as.numeric(scale(PCM_outcome$fmi))
+
 ################################################################################
 #### ---------------------------- COVARIATES ------------------------------ ####
 ################################################################################

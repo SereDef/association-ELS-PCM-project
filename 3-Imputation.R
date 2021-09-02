@@ -207,7 +207,7 @@ sdatlist <- miceadds::scale_datlist(post50cutoff, orig_var = c('prenatal_stress'
 post50cutoff <- miceadds::datlist2mids(sdatlist)
 
 out_int      <- miceadds::subset_datlist( post50cutoff, subset = !is.na(post50cutoff$data$intern_score_z),  toclass = 'mids')
-out_fat      <- miceadds::subset_datlist( out_int,      subset = !is.na(out_int$data$fmi_z),  toclass = 'mids') # fat_mass_z
+out_fat      <- miceadds::subset_datlist( out_int,      subset = !is.na(out_int$data$fat_mass_z),  toclass = 'mids')
 no_twins     <- miceadds::subset_datlist( out_fat,      subset = out_fat$data$twin == 0,  toclass = 'mids') 
 finalset     <- miceadds::subset_datlist( no_twins,     subset = no_twins$data$IDC %notin% siblings_to_exclude, toclass = 'mids')
 

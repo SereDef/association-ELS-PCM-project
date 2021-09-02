@@ -49,8 +49,8 @@ ELS_PCM$postnatal_stress <- rowSums(ELS_PCM[,c("post_life_events",
 
 # Compute >80th percentile internalizing and fat mass scores. 
 ELS_PCM$int = ifelse(ELS_PCM$intern_score_z > quantile(ELS_PCM$intern_score_z, probs = 0.8, na.rm = T), 1, 0) #  867 risk, 4055 no risk
-# ELS_PCM$fat = ifelse(ELS_PCM$fat_mass_z     > quantile(ELS_PCM$fat_mass_z,     probs = 0.8, na.rm = T), 1, 0) # 1128 risk, 4509 no risk
-ELS_PCM$fat = ifelse(ELS_PCM$fmi_z > quantile(ELS_PCM$fmi_z, probs = 0.8, na.rm = T), 1, 0) # 1125 risk, 4498 no risk
+ELS_PCM$fat = ifelse(ELS_PCM$fat_mass_z     > quantile(ELS_PCM$fat_mass_z,     probs = 0.8, na.rm = T), 1, 0) # 1128 risk, 4509 no risk
+# ELS_PCM$fat = ifelse(ELS_PCM$fmi_z > quantile(ELS_PCM$fmi_z, probs = 0.8, na.rm = T), 1, 0) # 1125 risk, 4498 no risk
 
 # Compute groups
 ELS_PCM$risk_groups = rep(NA, nrow(ELS_PCM))
