@@ -63,11 +63,13 @@ for (i in 1:nrow(ELS_PCM)) {
 }
 
 # Let's factor that bad boy 
-ELS_PCM$risk_groups = factor(ELS_PCM$risk_groups, 
+ELS_PCM$risk_groups <- factor(ELS_PCM$risk_groups, 
                          levels = c(0:3), 
                          labels = c("healthy", "internalizing_only", "cardiometabolic_only", "multimorbid"))
 
 summary(ELS_PCM$risk_groups)
+
+ELS_PCM$risk_groups_rec <- relevel(ELS_PCM$risk_groups, "multimorbid")
 
 #------------------------------------------------------------------------------#
 # ------------------------- PERMUTATION TESTING -------------------------------#
@@ -153,3 +155,4 @@ pval = format(round(count / itarations, 10), nsmall = 3); cat("P-value: ", pval)
 
 # Save the dataset in an .rds file, in the directory where the raw data are stored
 saveRDS(ELS_PCM, paste0(pathtodata,'ELSPCM_dataset.rds'))
+

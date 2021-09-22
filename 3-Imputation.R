@@ -33,7 +33,7 @@ ELSPCM_essentials <- ELSPCM[, c('IDC',
                     'pre_life_events', 'pre_contextual_risk', 'pre_parental_risk', 'pre_interpersonal_risk', 
                     'post_life_events', 'post_contextual_risk', 'post_parental_risk', 'post_interpersonal_risk', 'post_direct_victimization',
                      # cumulative prenatal and postnatal stress exposure
-                    'prenatal_stress', "postnatal_stress",
+                    'prenatal_stress', 'postnatal_stress',
                      # outcome variables and covariates + additional auxiliary variables for imputation
                      outcomes, covars, auxil, exclusion_criteria)]
 

@@ -40,7 +40,7 @@ post_IR <- c('marital_problems','marital_status','family_size','m_fad_5yrs','m_f
              'conflict_smbd_else','conflict_in_family','divorce_childhood','argument_friend')
 post_DV <- c('m_harsh_parent','p_harsh_parent','bullying','physical_violence','physical_threats','sexual_harrasment',
              'sexual_behavior','rumors_or_gossip')
-outcomes <- c('intern_score_z', 'fat_mass_z', 'risk_groups')
+outcomes <- c('intern_score_z', 'fat_mass_z', 'risk_groups', 'risk_groups_rec')
 covars   <- c('sex', 'age_child', 'm_bmi_berore_pregnancy', 'm_smoking', 'm_drinking')
 auxil    <- c('m_bmi_pregnancy','m_dep_cont_pregnancy', 'p_dep_cont_pregnancy', # for postnatal only 
               'm_bmi_5yrs', 'm_dep_cont_3yrs', 'p_dep_cont_3yrs',               # for prenatal only 
