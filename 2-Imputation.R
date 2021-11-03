@@ -241,8 +241,9 @@ no_sibls <- miceadds::subset_datlist( no_twins, subset = no_twins$data$IDC %noti
 
 ################################################################################
 # Finally, we need to construct and add the risk group variables in  each imputed dataset. 
-# to do so we will use the fucntion construct_grp defined in 0-Functions.R
-# 
+# to do so we will use the function construct_grp defined in 0-Functions.R
+# We will be doing this only on the selected sample to save some time. The same code can 
+# be adapted to use the pre-selection "imputation" variable. 
 
 # convert imputations into a long dataframe
 long <- mice::complete(finalset, action = "long", include = TRUE) 
@@ -273,12 +274,12 @@ finalset <- mice::as.mids(return_dat) # reconvert long dataframe to mids object
 
 # I save the mids object (i.e. list of imputed datasets)
 saveRDS(imputation, file.path(pathtoresults,'imputation_list_full.rds'))
-saveRDS(finalset,   file.path(pathtoresults,'imputation_list_ELSPCM.rds'))
+saveRDS(finalset,   file.path(pathtoresults,'imputation_list_sample.rds'))
 
 # I also save the last imputed dataset for sanity checks
 full_imputed <- complete(imputation, 30) 
 ELSPCM_imputed <- complete(finalset, 30) 
 saveRDS(full_imputed,   file.path(pathtoresults, 'imputed30_full.rds'))
-saveRDS(ELSPCM_imputed, file.path(pathtoresults, 'imputed30_ELSPCM.rds'))
+saveRDS(ELSPCM_imputed, file.path(pathtoresults, 'imputed30_sample.rds'))
 
 ################################################################################
