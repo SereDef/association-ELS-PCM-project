@@ -134,23 +134,15 @@ flowchart <- function(df, return_selected_sample = F) {
   step2 <- step1[step1$post_percent_missing < 50.0,]
   loss <- nrow(step2) - as.numeric(fc[length(fc)])
   fc <- c(fc, no_post = loss, after_post_selection = nrow(step2))
-  #
-  # step3 <- step2[!is.na(step2$intern_score_z),] 
-  # loss <- nrow(step3) - as.numeric(fc[length(fc)])
-  # fc <- c(fc, no_inte = loss, after_inte_selection = nrow(step3))
-  # #
-  # step4 <- step3[!is.na(step3$fat_mass_z),]
-  # loss <- nrow(step4) - as.numeric(fc[length(fc)])
-  # fc <- c(fc, no_fatm = loss, after_fatm_selection = nrow(step4))
-  #
-  step5 <- step2[step2$twin == 0,]
-  loss <- nrow(step5) - as.numeric(fc[length(fc)])
-  fc <- c(fc, no_twin = loss, after_twin_selection = nrow(step5))
+  # no selection of outcomes 
+  step3 <- step2[step2$twin == 0,]
+  loss <- nrow(step3) - as.numeric(fc[length(fc)])
+  fc <- c(fc, no_twin = loss, after_twin_selection = nrow(step3))
   # 
-  worse_sib_list <- select_sibling(step5, column_selection = c(pre_LE, pre_CR, pre_PR, pre_IR,
+  worse_sib_list <- select_sibling(step3, column_selection = c(pre_LE, pre_CR, pre_PR, pre_IR,
                                                                post_LE, post_CR, post_PR, post_IR, post_DV,
                                                                outcomes_13y, outcomes_09y, covars, auxil))
-  finalsample <- step5[step5$IDC %notin% worse_sib_list, ]
+  finalsample <- step3[step3$IDC %notin% worse_sib_list, ]
   loss <- nrow(finalsample) - as.numeric(fc[length(fc)])
   fc <- c(fc, no_siblings = loss, final_sample = nrow(finalsample))
   

@@ -57,7 +57,7 @@ imp0 <- mice(ELSPCM_essentials, maxit = 0, defaultMethod = rep('pmm',4) )
 #   said to perform quite well under circumstance where the categorical data is sparse 
 #   (Van Buuren, 2018).
 
-meth <- make.method(ELSPCM_essentials)
+meth <- imp0$method
 # We use passive imputation for the domain scores. This means that the indicator items  
 # are imputed first, and then, using these complete items, mean domain scores are 
 # derived by the formula specified using passive_imp_formula (see 0-Functions.R)
@@ -79,15 +79,16 @@ meth['postnatal_stress'] <- "~I( post_life_events + post_contextual_risk + post_
 # so we define them by manually modifying the predictormatrix
 predictormatrix <- imp0$predictorMatrix
 
-# Do not impute nor use IDC, any of the exclusion criteria, risk groups
+# Do not impute nor use IDC, any of the exclusion criteria
 predictormatrix[, c("IDC", exclusion_criteria) ] <- 
   predictormatrix[c("IDC", exclusion_criteria),] <- 0
 # Leave the domain and total ELS scores to the passive imputation
 predictormatrix[c(domains, 'prenatal_stress', 'postnatal_stress'), ] <- 0
 # Do not use cumulative pre and postnatal scores as predictors in the items imputation
+# nor the outcome timepoints
 predictormatrix[c(pre_LE, pre_CR, pre_PR, pre_IR,# all variables for prenatal risk
                   post_LE, post_CR, post_PR, post_IR, post_DV), # all variables for postnatal risk
-                c('prenatal_stress', 'postnatal_stress') ]  <- 0
+                c('prenatal_stress', 'postnatal_stress', outcomes_13y, outcomes_09y) ]  <- 0
 
                ### Impute auxiliary variables and covariates ###
 # To prevent multicollinearity, auxiliary variables are imputed given the domain scores 
@@ -140,28 +141,22 @@ predictormatrix['tot_fat_percent_13',
 predictormatrix[c(pre_LE), # LE
                 c(pre_CR, pre_PR, pre_IR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables 
-                  'pre_life_events', 'm_bmi_before_pregnancy', auxil[1:3],
-                  outcomes_13y, outcomes_09y)] <- 0
+                  'pre_life_events', 'm_bmi_before_pregnancy', auxil[1:3])] <- 0
 # CR domain
 predictormatrix[c(pre_CR),
                 c(pre_LE, pre_PR, pre_IR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables
-                  'pre_contextual_risk', 'm_bmi_before_pregnancy', auxil[1:3], 
-                  outcomes_13y, outcomes_09y)] <- 0
-
+                  'pre_contextual_risk', 'm_bmi_before_pregnancy', auxil[1:3])] <- 0
 # PR domain 
 predictormatrix[c(pre_PR),
                 c(pre_LE, pre_CR, pre_IR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables
-                  'pre_parental_risk', 'm_bmi_before_pregnancy', auxil[1:3], 
-                  outcomes_13y, outcomes_09y)] <- 0
-
+                  'pre_parental_risk', 'm_bmi_before_pregnancy', auxil[1:3])] <- 0
 # IR domain
 predictormatrix[c(pre_IR),
                 c(pre_LE, pre_CR, pre_PR, post_LE, post_CR[!post_CR == 'm_education'], # because m_education is auxiliary for prenatal variables
                   post_PR, post_IR[!post_IR == 'marital_status'], post_DV,             # marital_status is auxiliary for prenatal variables
-                  'pre_interpersonal_risk', 'm_bmi_before_pregnancy', auxil[1:3], 
-                  outcomes_13y, outcomes_09y)] <- 0
+                  'pre_interpersonal_risk', 'm_bmi_before_pregnancy', auxil[1:3])] <- 0
   
                                   ### POSTNATAL ###
 # LE domain 
@@ -169,39 +164,31 @@ predictormatrix[c(post_LE),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
                   pre_PR, pre_IR[!pre_IR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_CR, post_PR, post_IR, post_DV,
-                  'post_life_events', 'm_bmi_before_pregnancy', auxil[4:6], 
-                  outcomes_13y, outcomes_09y)] <- 0 
+                  'post_life_events', 'm_bmi_before_pregnancy', auxil[4:6])] <- 0 
 # CR domain
 predictormatrix[c(post_CR),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
                   pre_PR, pre_IR[!pre_IR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_PR, post_IR, post_DV,
-                  'post_contextual_risk', 'm_bmi_before_pregnancy', auxil[4:6], 
-                  outcomes_13y, outcomes_09y)] <- 0
-  
+                  'post_contextual_risk', 'm_bmi_before_pregnancy', auxil[4:6])] <- 0
 # PR domain 
 predictormatrix[c(post_PR),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
                   pre_PR, pre_IR[!pre_IR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_CR, post_IR, post_DV,
-                  'post_parental_risk', 'm_bmi_before_pregnancy', auxil[4:6], 
-                  outcomes_13y, outcomes_09y)] <- 0
-
+                  'post_parental_risk', 'm_bmi_before_pregnancy', auxil[4:6])] <- 0
 # IR domain
 predictormatrix[c(post_IR),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
                   pre_PR, pre_IR[!pre_IR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_CR, post_PR, post_DV,
-                  'post_interpersonal_risk', 'm_bmi_before_pregnancy', auxil[4:6], 
-                  outcomes_13y, outcomes_09y)] <- 0
-
+                  'post_interpersonal_risk', 'm_bmi_before_pregnancy', auxil[4:6])] <- 0
 # DV domain
 predictormatrix[c(post_DV),
                 c(pre_LE, pre_CR[!pre_CR == 'm_education_pregnancy'],    #  m_education_pregnancy is auxiliary for postnatal variables
                   pre_PR, pre_IR[!pre_IR == 'marital_status_pregnancy'], #  marital_status_pregnancy is auxiliary for postnatal variables
                   post_LE, post_CR, post_PR, post_IR,
-                  'post_direct_victimization', 'm_bmi_before_pregnancy', auxil[4:6], 
-                  outcomes_13y, outcomes_09y)] <- 0
+                  'post_direct_victimization', 'm_bmi_before_pregnancy', auxil[4:6])] <- 0
   
 # OPTIONAL : Quickly check the matrix to make sure it looks legit
 # pheatmap::pheatmap(predictormatrix, cluster_rows = F, cluster_cols = F)
@@ -246,7 +233,7 @@ no_sibls <- miceadds::subset_datlist( no_twins, subset = no_twins$data$IDC %noti
 # be adapted to use the pre-selection "imputation" variable. 
 
 # convert imputations into a long dataframe
-long <- mice::complete(finalset, action = "long", include = TRUE) 
+long <- mice::complete(no_sibls, action = "long", include = TRUE) 
 # initialize empty long dataframe for return
 return_dat <- data.frame() 
 #  apply compute_grp to each imputed dataset
