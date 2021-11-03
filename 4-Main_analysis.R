@@ -14,6 +14,8 @@ if (exists("imp") == F) {
 
 # outlier exclusion
 # imp <- miceadds::subset_datlist( imp, subset = ! imp$data$IDC %in% c(5105), toclass = 'mids')
+# Append 'forgotten' variable 
+# imp2 <- cbind(imp, fmper = data$fmper)
 
 # Transform into a datalist
 dat <- miceadds::mids2datlist(imp)

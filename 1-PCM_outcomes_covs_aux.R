@@ -9,7 +9,8 @@
 # check out https://github.com/SereDef/cumulative-ELS-score
 
 ## For this script you are going to need the following datasets from datamanagement
-# CHILDCBCL9_10082016.sav, CHILDFATMASS9_13092016.sav, 
+# CHILDCBCL9_10082016.sav, GR1093-E1_CBCL_18062020.sav, 
+# CHILDFATMASS9_13092016.sav, CHILDDXATOTALBODY13_18102021.sav,
 # CHILD-ALLGENERALDATA_07072020.sav, GEDRAGSGROEP_MaternalDrinking_22112016.sav, 
 # MATERNALSMOKING_22112016.sav, GEDRAGSGROEP_MaternalDrinking_22112016.sav, 
 # MOTHERANTHROPOMETRY_18022013.sav, GR1003-BSI D1_22112016.sav, and 
@@ -20,13 +21,13 @@
 # -----------------------------------------------------------------------------#
 
 source('0-Functions.R') # where readquick() is defined
+# When prompted with a window, please navigate to the directory where your input 
+# files are stored. Choose any file in the directory to continue.
+# Note: the code assumes that all (raw) data is stored in ONE folder.
 
 ################################################################################
-#### ------------------ INTERNALIZING PROBLEMS ( @ 9 ) -------------------- ####
+#### ------------------ INTERNALIZING PROBLEMS ( @13 ) -------------------- ####
 ################################################################################
-
-# Read in the dataset
-cbcl <- readquick("CHILDCBCL9_10082016.sav") # 9901 obs. of 627 vars
 
 # The internalizing sub-scale of the Child Behavior Checklist (CBCL 6-18) (Achenbach, 1999)
 # is an empirically based score derived from the widely used parent-report questionnaire. 
@@ -34,57 +35,56 @@ cbcl <- readquick("CHILDCBCL9_10082016.sav") # 9901 obs. of 627 vars
 # sometimes true", 2 = "Very or often true") and referred to the past 6 months. 
 # Hence the score ranges from 0 to 64. 
 
-internalizing <- data.frame('IDC' = cbcl$idc,
-                            'age_child_cbcl'   = cbcl$agechild_cbcl9m,
-                            'n_missing_intern' = cbcl$nmisint_9m,  # number of missing values in internalizing scale items
-                            'intern_score'     = cbcl$sum_int_9m ) # weighted sum score internalizing scale (allowing 25% missing)
-# Calculation (based on SPSS script available on the V: drive): 
-# if 24 out of 32 items are available (i.e. 75%), sum of the item
-# scores * (32 / 32 - nmisnt_9m). 
+# Read in the dataset
+cbcl09 <- readquick("CHILDCBCL9_10082016.sav") # 9901 obs. of 627 vars
+cbcl13 <- readquick("GR1093-E1_CBCL_18062020.sav") # 9901 obs. of 331 vars
 
-# One alternative could be to use the anxious/depressed empirical sub-scale (9y, mother report)
+cbcl <- merge(cbcl09, cbcl13, by = "idc")
+
+internalizing <- data.frame('IDC' = cbcl09$idc,
+                            'age_child_cbcl'   = cbcl$agechild_gr1093,
+                            'intern_score_09'  = cbcl$sum_int_9m, # weighted sum score internalizing scale (allowing 25% missing)
+                            'intern_score_13'  = cbcl$sum_int_14)
+# Calculation (based on SPSS script available on the Generation R V: drive): 
+# if 24 out of 32 items are available (i.e. 75%), sum of the item
+# scores * (32 / 32 - number of missing values). 
+
+# One alternative could be to use the anxious/depressed empirical sub-scale (mother report)
 # However I did give it a shot and it does not seem to perfom better than the internalizing one.
 
 ################################################################################
-#### -------------------------- FAT MASS ( @ 9 ) -------------------------- ####
+#### -------------------------- FAT MASS ( @13 ) -------------------------- ####
 ################################################################################
 
 # Although the original plan for this project involved a more comprehensive measure
-# of child metabolic syndrome (see CMR_score.R file for specifics), android fat mass
-# was the only metabolic risk variable that showed appreciable variance in such young 
+# of child metabolic syndrome (see CMR_score.R file for specifics), fat mass was
+# the only metabolic risk variable that showed appreciable variance in such young 
 # children and the highest correlation with internalizing (small but significant r =.12)
 # It was also selected on the base of data availability both cross-sectionally and 
 # for future longitudinal assessment. 
 
 # Read in the datasets
-dxa  <- readquick("CHILDFATMASS9_13092016.sav") # 5862 obs of 28 vars
-meas <- readquick("CHILDGROWTH9_04062020.sav")
+dxa09  <- readquick("CHILDFATMASS9_13092016.sav") # 5862 obs of 28 vars
+dxa13  <- readquick("CHILDDXATOTALBODY13_18102021.sav") # 5862 obs of 28 vars
 
-fatmass <- merge(dxa, meas, by = 'idc')
+dxa <- merge(dxa09, dxa13, by = 'idc')
 
 # Select only the necessary measures
-fat_mass <- data.frame('IDC' = fatmass$idc,
-          'age_child_visit1' = fatmass$agechild9_visit1, # age at first visit
-                  'fat_mass' = fatmass$fat_mass_androidchild9,
-                   'tot_fat' = fatmass$fat_mass_totalchild9,
-                 'trunk_fat' = fatmass$fat_mass_trunkchild9,
-                    'height' = fatmass$heightchild9, 
-                       'bmi' = fatmass$bmichild9)
+fat_mass <- data.frame('IDC' = dxa$idc,
+             'age_child_dxa' = dxa$agechild13, # age at visit
+          'andr_fat_mass_09' = dxa$fat_mass_androidchild9,
+          'andr_fat_mass_13' = dxa$fat_mass_androidchild13,
+              'total_fat_09' = dxa$fat_mass_totalchild9,
+              'total_fat_13' = dxa$fat_mass_totalchild13,
+        'tot_fat_percent_09' = dxa$avg_percent_fat*100, # Re-scale to match the age13 variable 
+        'tot_fat_percent_13' = dxa$totalfatpercentagechild13 )
 
 # fat_mass$fmi <- fat_mass$tot_fat / (fat_mass$height^2)
-# c = cor(fat_mass, use = 'complete.obs')
 # hist(fat_mass$fmi)
 
 ################################################################################
 # merge the two main (mental and physical) outcomes with child sex into one dataset
 PCM_outcome <- merge(internalizing, fat_mass, by = 'IDC',  all = T)
-
-# ------------------------------------------------------------------------------
-# Before we can use them in the analysis, the outcome variables need to be standardized. 
-# so, here we take the standard deviation score.
-PCM_outcome$intern_score_z <- as.numeric(scale(PCM_outcome$intern_score))
-PCM_outcome$fat_mass_z     <- as.numeric(scale(PCM_outcome$fat_mass))
-# PCM_outcome$fmi_z     <- as.numeric(scale(PCM_outcome$fmi))
 
 ################################################################################
 #### ---------------------------- COVARIATES ------------------------------ ####
@@ -104,10 +104,10 @@ PCM_outcome$fat_mass_z     <- as.numeric(scale(PCM_outcome$fat_mass))
 ### AGE of the child
 # Combine age of the child measured during first visit and at CBCL administration
 # This value will serve as a covariate in the first adjusted model.
-PCM_outcome$age_child <- (PCM_outcome$age_child_visit1 + PCM_outcome$age_child_cbcl) / 2
+PCM_outcome$age_child <- (PCM_outcome$age_child_dxa + PCM_outcome$age_child_cbcl) / 2
     # OPTIONAL: check age difference between measurements
-    # plot(PCM_outcome$age_child_visit1, PCM_outcome$age_child_cbcl)
-    # summary(PCM_outcome$age_child_visit1 - PCM_outcome$age_child_cbcl)
+    # plot(PCM_outcome$age_child_dxa, PCM_outcome$age_child_cbcl)
+    # summary(PCM_outcome$age_child_dxa - PCM_outcome$age_child_cbcl)
 
 #-------------------------------------------------------------------------------
 ### MATERNAL SMOKING during pregnancy 
@@ -132,16 +132,16 @@ child_general <- readquick("CHILD-ALLGENERALDATA_07072020.sav") # 9901 obs of 12
 
 # Ethnicity recode – dichotomized into: dutch and non-dutch;
 child_general$ethnicity <- ifelse(is.na(child_general$ethnfv2), NA,
-                                        ifelse(child_general$ethnfv2 == 1, 0,  # Dutch = 0, non-Dutch = 1
-                                               1)) # American, western (300) Asian, western (500) European (700), Oceanie (800)
-                                        # Indonesian (2), Cape Verdian (3), Maroccan (4) Dutch Antilles (5) Surinamese 
-                                        # (6) Turkish (7) African (200), American, non western (400), Asian, non western (600)
+                                        ifelse(child_general$ethnfv2 == 1, 0, 1))  # Dutch = 0, non-Dutch = 1
+                           # American, western (300) Asian, western (500) European (700), Oceanie (800)
+                           # Indonesian (2), Cape Verdian (3), Maroccan (4) Dutch Antilles (5) Surinamese 
+                           # (6) Turkish (7) African (200), American, non western (400), Asian, non western (600)
 
 general_cov_aux <- data.frame('IDC' = child_general$idc, 
                               'IDM' = child_general$idm,
                               'sex' = as.factor(child_general$gender),    ### 1 = boy; 2 = girl.
                         'ethnicity' = as.factor(child_general$ethnicity), ### 0 = Dutch, 1 = non-Dutch
-           'm_bmi_berore_pregnancy' = child_general$bmi_0,     ### self-reported Maternal BMI
+           'm_bmi_before_pregnancy' = child_general$bmi_0,     ### self-reported Maternal BMI
                              'twin' = child_general$twin,      # (exclusion criteria)
                            'mother' = child_general$mother,    # mother id used to identify siblings (for exclusion)
                            'parity' = child_general$parity,    # parity (used for imputation)
@@ -196,5 +196,5 @@ PCM_project = merge(PCM_outcome, general_cov_aux, by = 'IDC', all = T)
 ################################################################################
 
 # Save the dataset in an .rds file, in the directory where the raw data are stored
-saveRDS(PCM_project, paste0(pathtodata, 'PCM_allvars.rds'))
+saveRDS(PCM_project, file.path(pathtoresults, 'PCM_allvars.rds'))
 
