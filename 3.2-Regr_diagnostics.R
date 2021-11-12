@@ -11,8 +11,8 @@
 # with the rest of the data.
 
 # Load required packages
-utilis <- c('car', 'gvlma', 'nnet', 'mice')
-lapply(utilis, require, character.only = T);
+utilis <- c('car', 'gvlma', 'nnet', 'mice', 'splines')
+invisible(lapply(utilis, require, character.only = T))
 
 
 # Load the list of imputed dataset
@@ -22,37 +22,83 @@ if (exists("imp") == F) {
   imp <- readRDS(imp_path)
 }
 
+data <- flowchart(ELSPCM, return_selected_sample = T)
 # original dataset (with missing data)
 data <- mice::complete(imp, action = 0)
 # data1 <- data[-c(1751, 336, 785, 2371, 1297, 1645), ] # influential point
 # data2 <- data[-c(604, 1710, 2030, 397, 2480, 3274), ] # influential point
 
-fit1 <- lm(intern_score_z ~ prenatal_stress_z * postnatal_stress_z + sex + age_child + 
-            ethnicity +  m_bmi_berore_pregnancy + m_smoking + m_drinking, data = data) 
-fit2 <- lm(fat_mass_z ~ prenatal_stress_z * postnatal_stress_z + 
-            # I(prenatal_stress_z^2) + I(postnatal_stress_z^2) + 
-             sex + age_child + 
-             ethnicity + m_bmi_berore_pregnancy + m_smoking + m_drinking, data = data)
-fit3 <- nnet::multinom(risk_groups_rec ~ prenatal_stress_z*postnatal_stress_z + 
-                  sex + age_child + ethnicity + m_bmi_berore_pregnancy + m_smoking + m_drinking, 
-                  model = T, data = data)
+# Define the main additive model including prenatal and postnatal stress, sex, age, 
+# ethnicity, and maternal covariates (BMI, smoking and alcohol consumption)
+intern  <- lm( intern_score_13 ~ prenatal_stress + postnatal_stress + sex + age_child + 
+                ethnicity +  m_bmi_before_pregnancy + m_smoking + m_drinking, data = data) 
+fat.per <- update( intern, tot_fat_percent_13 ~ .) 
+fat.and <- update( intern, andr_fat_mass_13 ~ .)
+fat.tot <- update( intern, total_fat_13 ~ .)
+
+# Try transformations of the outcome
+intern.sqrt <- update( intern.int, sqrt(.) ~ .)
+
+# Evaluate the interaction between stress periods for each model
+intern.int  <- update( intern,  . ~ . + prenatal_stress:postnatal_stress)
+fat.per.int <- update( fat.per, . ~ . + m_bmi_before_pregnancy:sex )
+fat.and.int <- update( fat.and, . ~ . + prenatal_stress:sex )
+fat.tot.int <- update( fat.tot, . ~ . + prenatal_stress:sex )
+
+# Evaluate possible nonlinear effects of the two stress periods for each model 
+intern.nlin <- update( intern, . ~ . - prenatal_stress - postnatal_stress 
+                       + splines::ns(prenatal_stress, 3) + splines::ns(postnatal_stress, 3))
+fat.per.nlin <- update( intern.nlin, tot_fat_percent_13 ~ .)
+fat.and.nlin <- update( intern.nlin, andr_fat_mass_13 ~ .)
+fat.tot.nlin <- update( intern.nlin, total_fat_13 ~ .)
+# Evaluate non-linearity for the age covariate. 
+intern.nlin.AGE <- update( intern, . ~ . - age_child + splines::ns(age_child, 3))
+fat.per.nlin.AGE <- update( intern.nlin.AGE, tot_fat_percent_13 ~ .)
+fat.and.nlin.AGE <- update( intern.nlin.AGE, andr_fat_mass_13 ~ .)
+# Evaluate non-linearity for maternal BMI
+intern.nlin.BMI <- update( intern, . ~ . - m_bmi_before_pregnancy + splines::ns(m_bmi_before_pregnancy, 3))
+fat.per.nlin.BMI <- update( intern.nlin.BMI, tot_fat_percent_13 ~ .)
+fat.and.nlin.BMI <- update( intern.nlin.BMI, andr_fat_mass_13 ~ .)
+
+anova(intern.int, intern)
+anova(fat.per.int, fat.per)
+anova(fat.and.int, fat.and)
+anova(fat.tot.int, fat.tot)
+
+anova(intern.nlin, intern)
+anova(fat.per.nlin, fat.per)
+anova(fat.and.nlin, fat.and)
+anova(fat.tot.nlin, fat.tot)
+
+anova(intern.nlin.AGE, intern)
+anova(fat.per.nlin.AGE, fat.per)
+anova(fat.and.nlin.AGE, fat.and)
+
+anova(intern.nlin.BMI, intern)
+anova(fat.per.nlin.BMI, fat.per)
+anova(fat.and.nlin.BMI, fat.and)
+
+# grp <- nnet::multinom(risk_groups_rec ~ prenatal_stress_z + postnatal_stress_z + 
+#                  sex + age_child + ethnicity + m_bmi_berore_pregnancy + m_smoking + m_drinking, 
+#                  model = T, data = data)
+
 
 ### ======================= GENERAL FIT DIAGNOSTICS ======================== ###
 
 # RESIDUALS VS. PREDICTORS & VS. FITTED VALUES
 # Useful for revealing problems but less so for determining the exact nature of the problem. 
-car::residualPlots(fit1, main = "Internalizing")
-car::residualPlots(fit2, main = "Fat mass")
+car::residualPlots(intern.nlin.DRINK, main = "Internalizing")
+car::residualPlots(fat.per, main = "Fat mass")
 # If a linear model is correctly specified, the Pearson residuals are independent 
 # of the fitted values and predictors, so these graphs should be null plots, with 
 # no systematic features. One non-null plot (curved general trend) is enough to 
 # suggest that the specified model does not match the data, generally implying a 
 # failure of one or more assumptions. In the residual plot for a factor the boxes 
 # should all have about the same center and spread.
-# A lack-of-fit test is also computed for each numeric predictor (i.e. a t test for 
+# A lack-of-fit test is also computed for each numeric predictor (i.e. a t-test for 
 # (regressor)^2 added to the model. Significant p-values indicate lack-of-fit, 
 # confirming the nonlinear pattern visible in the graph. 
-# For the plot of residuals vs fitted values, the Tukey’s test for nonadditivity 
+# For the plot of residuals vs fitted values, the Tukey’s test for non-additivity 
 # is obtained by adding the squares of the fitted values to the model and refitting. 
 # The test confirms the impression of curvature (the fitted model is not adequate).
 
@@ -231,5 +277,5 @@ car::durbinWatsonTest(fit2)
 
 # Global test of model assumptions #############################################
 
-gvmodel <- gvlma::gvlma(fit1.3)
+gvmodel <- gvlma::gvlma(intern.sqrt)
 summary(gvmodel)
