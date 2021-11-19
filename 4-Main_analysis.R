@@ -30,7 +30,11 @@ pool_fit <- function(fit, logm = FALSE, rev = FALSE) {
   } else {
     if (rev == T) { levels(mod$y.level) <- c("M:healthy", "M:intern", "M:fatmas") 
     } else { levels(mod$y.level) <- c("H:intern", "H:fatmas", "H:multim") } # make group comparisons easier to read
+    mod$OR <- round(exp(-(mod$estimate)), 4)
+    mod$lci <- round(exp((-(mod$estimate)) - 1.96*mod$std.error), 4)
+    mod$uci <- round(exp((-(mod$estimate)) + 1.96*mod$std.error), 4)
     mod$AIC <- c(mean(p_fit$glanced$AIC), rep(NA, nrow(mod)-1)) # add a column for AIC
+    
   }
   print(mod)
   return(mod)
