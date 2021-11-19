@@ -1,7 +1,8 @@
 
 # Load required packages
-utilis <- c('foreign', 'stats', 'mice', 'miceadds')
-lapply(utilis, require, character.only = T);
+utilis <- c('foreign', 'stats', 'mice', 'miceadds', 
+            'car', 'gvlma', 'nnet', 'splines')
+invisible(lapply(utilis, require, character.only = T));
 
 # Defining the path to the data
 # check if the path to the data is already in memory, otherwise ask for it. 
