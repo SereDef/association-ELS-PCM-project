@@ -33,22 +33,21 @@ s <- summdf(summary(sample))
 
 # Stack imputed datasets in long format, exclude the original data
 impdat <- complete(imp_samp, action="long", include = FALSE)
+
 cont <- impdat[, -c(which(colnames(impdat) %in% c('sex', "ethnicity", risk_grps)))]
-cate <- impdat[, c(".imp", 'sex', "ethnicity", risk_grps)]
+cate <- impdat[, c(".imp", "ethnicity", risk_grps[1:3])]
 
 # compute mean and standard deviation in each imputed dataset
 pool_mean <- with(cont, by(cont, .imp, function(x) summary(x)))
 pool_numb <- with(cate, by(cate, .imp, function(x) summary(x)))
 
-m = pool_mean[[1]]
-as.matrix(as.numeric(sapply(strsplit(m, ":"), "[[", 2)), ncol=148)
+num_pool <- lapply(pool_mean, function(m) matrix(as.numeric(sapply(strsplit(m, ":"), "[[", 2)), nrow = dim(m)[1], ncol=dim(m)[2]))
+pool_mean <- Reduce("+",num_pool)/length(num_pool)
+colnames(pool_mean) <- colnames(cont)
+rownames(pool_mean) <- c( 'Min.', '1st Qu.', 'Median', 'Mean', '3rd Qu.','Max.')
 
+count_pool <- lapply(pool_numb, function(m) matrix(as.numeric(sapply(strsplit(m, ":"), "[[", 2)), nrow = dim(m)[1], ncol=dim(m)[2]))
 
-pool_mean <- lapply(pool_mean, strsplit, ':', 2)
-
-Reduce("+",pool_mean)/length(pool_mean)
-
-apply(simplify2array(pool_mean), c(1,2), split)
 
 # Group specific summary
 bys <- by(sample, sample$risk_groups, summary)
