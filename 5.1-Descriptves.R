@@ -12,39 +12,43 @@ summdf <- function(object) {
 }
 
 # Load datasets
-ELSPCM <- readRDS(paste0(pathtodata, 'ELSPCM_dataset.rds'))
+imp_samp <- readRDS(file.path(pathtoresults, 'imputation_list_sample.rds'))
+imp_full <- readRDS(file.path(pathtoresults, 'imputation_list_full.rds'))
+
+full <- complete(imp_full, 0) 
+sample <- complete(imp_samp, 0) 
 
 ################################################################################
-# For the sake of time efficiency (and my mental health) let's select only those 
-# variables that are needed for imputation and subsequent sample selection. 
-# I will use the variable names defined in 0-Functions.R. 
-# Once I am at it, I also order them by domain. This is important because mice is sensitive
-# to the order of the variables in the set (even though this may be a version-specific issue)
 
-ELSPCM_essentials <- ELSPCM[, c('IDC', 
-                                # all variables for prenatal risk
-                                pre_LE, pre_CR, pre_PR, pre_IR,
-                                # all variables for postnatal risk
-                                post_LE, post_CR, post_PR, post_IR, post_DV,
-                                # all domain scores
-                                'pre_life_events', 'pre_contextual_risk', 'pre_parental_risk', 'pre_interpersonal_risk', 
-                                'post_life_events', 'post_contextual_risk', 'post_parental_risk', 'post_interpersonal_risk', 'post_direct_victimization',
-                                # cumulative prenatal and postnatal stress exposure
-                                'prenatal_stress', 'postnatal_stress',
-                                # outcome variables and covariates + additional auxiliary variables for imputation
-                                outcomes, covars, auxil, exclusion_criteria)]
-
-sample <- flowchart(ELSPCM_essentials, return_selected_sample = T)
-# ============================================================================ #
 # Flowchart
-fc <- capture.output(flowchart(ELSPCM_essentials))[1:(which(fc=='$final_sample')+2)]
-fcm <- as.data.frame(t(matrix(unlist(fc), ncol = 13)[1:2, ])) 
+fc <- capture.output(flowchart(full, return_selected_sample = T))
+fc <- fc[1:(which(fc =='$final_sample')+2)]
+fcm <- as.data.frame(t(matrix(unlist(fc), ncol = 9)[1:2, ])) 
 fcm <- data.frame(fcm[,-1], row.names = fcm[,1])
 names(fcm) = 'N'
 fcm$N <- as.numeric(sub("\\[1]", "", fcm$N))
 
 # Sample summary
 s <- summdf(summary(sample))
+
+# Stack imputed datasets in long format, exclude the original data
+impdat <- complete(imp_samp, action="long", include = FALSE)
+cont <- impdat[, -c(which(colnames(impdat) %in% c('sex', "ethnicity", risk_grps)))]
+cate <- impdat[, c(".imp", 'sex', "ethnicity", risk_grps)]
+
+# compute mean and standard deviation in each imputed dataset
+pool_mean <- with(cont, by(cont, .imp, function(x) summary(x)))
+pool_numb <- with(cate, by(cate, .imp, function(x) summary(x)))
+
+m = pool_mean[[1]]
+as.matrix(as.numeric(sapply(strsplit(m, ":"), "[[", 2)), ncol=148)
+
+
+pool_mean <- lapply(pool_mean, strsplit, ':', 2)
+
+Reduce("+",pool_mean)/length(pool_mean)
+
+apply(simplify2array(pool_mean), c(1,2), split)
 
 # Group specific summary
 bys <- by(sample, sample$risk_groups, summary)
