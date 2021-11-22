@@ -1,7 +1,7 @@
 
 # Load required packages
 utilis <- c('foreign', 'stats', 'mice', 'miceadds', 
-            'car', 'gvlma', 'nnet', 'splines')
+            'car', 'gvlma', 'nnet', 'splines', 'openxlsx')
 invisible(lapply(utilis, require, character.only = T));
 
 # Defining the path to the data
