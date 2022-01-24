@@ -132,7 +132,7 @@ predictormatrix['tot_fat_percent_13',
   # we used BMI of the mother during pregnancy).
 # This method is more efficient (lower computational load) and the multicollinearity issue is 
 # also resolved. The technique has been found to reduce standard error substantially compared to 
-# complete-case analysis (Plumpton et al., 2010), and it outperforms other existing techniques (Eekhout et al., 2018). 
+# complete-case analysis (Plumpton et al., 2016), and it outperforms other existing techniques (Eekhout et al., 2018). 
 
 # So, let's adjust the predictormatrix such that ‘redundant’ items were not used as a predictor.
 
@@ -266,7 +266,9 @@ saveRDS(finalset,   file.path(pathtoresults,'imputation_list_sample.rds'))
 # I also save the last imputed dataset for sanity checks
 full_imputed <- complete(imputation, 30) 
 ELSPCM_imputed <- complete(finalset, 30) 
+ELSPCM_original <- complete(finalset, 0) 
 saveRDS(full_imputed,   file.path(pathtoresults, 'imputed30_full.rds'))
 saveRDS(ELSPCM_imputed, file.path(pathtoresults, 'imputed30_sample.rds'))
+write.csv(ELSPCM_original, file.path(pathtoresults, 'original_sample.csv'))
 
 ################################################################################

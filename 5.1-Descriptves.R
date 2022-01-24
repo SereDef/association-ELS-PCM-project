@@ -44,22 +44,30 @@ fcm$N <- as.numeric(sub("\\[1]", "", fcm$N))
 # ------------------------------------------------------------------------------
 # Sample summary (before imputation!)
 s <- summdf(summary(sample))
+# for (n in summary(as.factor(sample$m_smoking))) { cat(paste0(n, " (", round((n/4268)*100), "%) \n"))}
+# for (n in summary(as.factor(sample$m_drinking))) { cat(paste0(n, " (", round((n/4268)*100), "%) \n"))}
 
 # ------------------------------------------------------------------------------
 # Sample summary (after imputation!)
 # split the sample in only continuous and other categorical variables 
 cont <- impdat[, -c(which(colnames(impdat) %in% c('sex', "ethnicity", risk_grps)))]
 cate <- impdat[, c(".imp", "ethnicity", risk_grps[1:3])]
+drsm <- impdat[,  c(".imp", "m_drinking", "m_smoking")]
 # compute mean and standard deviation in each imputed dataset, dividing variables into
 # continuous and categorical and slitting categorical further according to the number of categories
 cont_summary <- with(cont, by(cont, .imp, function(x) summary(x[, -c(1, 2)]))) # exclude .imp and .id cols
 grps_summary <- with(cate, by(cate, .imp, function(x) summary(x[, -c(1, 2)]))) # exclude .imp and ethnicity
 ethn_summary <- with(cate, by(cate, .imp, function(x) summary(x[, 2]))) # select ethnicity only
+drnk_summary <- with(drsm, by(drsm, .imp, function(x) summary(as.factor(x[, 2]))))
+smok_summary <- with(drsm, by(drsm, .imp, function(x) summary(as.factor(x[, 3]))))
+
 # Pool descriptive s
 cont_pooled <- pool_descriptives(cont_summary, colnames(cont[-c(1,2)]))
 grps_pooled <- pool_descriptives(grps_summary, risk_grps[1:3], categorical = c( 'healthy', 'internalizing_only', 'cardiometabolic_only', 'multimorbid'))
 ethn_pooled <- data.frame(Reduce("+",ethn_summary)/length(ethn_summary))
 names(ethn_pooled) <- "ethnicity"
+drnk_pooled <- data.frame(Reduce("+",drnk_summary)/length(drnk_summary))
+smok_pooled <- data.frame(Reduce("+",smok_summary)/length(smok_summary))
 
 # ------------------------------------------------------------------------------
 notcat <- names(sample)[names(sample) %notin% c('IDC', 'twin', 'mother', 'sex', 'ethnicity', risk_grps)]

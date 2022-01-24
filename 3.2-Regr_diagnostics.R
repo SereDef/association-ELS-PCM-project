@@ -22,7 +22,7 @@ if (exists("imp_samp") == F) {
 }
 
 # original dataset (with missing data)
-data <- mice::complete(imp_samp, action = 30)
+data <- mice::complete(imp_samp, action = 0)
 # data1 <- data[-c(1751, 336, 785, 2371, 1297, 1645), ] # influential point
 
 # Define the main additive model including prenatal and postnatal stress, sex, age, 

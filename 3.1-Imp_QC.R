@@ -7,7 +7,7 @@ if (exists("imp_samp") == F) {
   dirname <- dirname(imp_path)
   ifelse(!dir.exists(file.path(dirname, 'imp-QC')), dir.create(file.path(dirname, 'imp-QC')), F)
   imp_samp <- readRDS(imp_path)
-  imp_full <- readRDS(file.path(dirname, "imputation_list_full.rds"))
+  #imp_full <- readRDS(file.path(dirname, "imputation_list_full.rds"))
 }
 
 # Organize variable names into domains to specify them later more easily
