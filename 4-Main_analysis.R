@@ -625,4 +625,5 @@ modls <- list("intern" = intern, "fatmas" = fatmas, "comorb" = comorb,
               "intern_select" = intern.resp, "fatmas_select" = fatmas.resp, "comorb_select" = comorb.resp, 
               "intern_robust_reg" = intern.robust, "fatmas_robust_reg" = fatmas.robust)
 
-openxlsx::write.xlsx(modls, file = file.path(dirname, "Results.xlsx"), overwrite = T)
+openxlsx::write.xlsx(modls, file = file.path(dirname, paste0(c("GenR_Results", Sys.Date(), ".xlsx"))), overwrite = T)
+                     
