@@ -118,7 +118,7 @@ dev.off()
 # to the chain of regression models that is used to generate the imputed values. 
 # The length of each chain is equal to the number of iterations.
 
-# The convergence can be visualised by plotting the means in a convergence plot. 
+# The convergence can be visualized by plotting the means in a convergence plot. 
 pdf(file.path(dirname, "imp-QC", "covergence-plots-full.pdf")) # this works only for full imp
 plot(imp_full)
 dev.off()
