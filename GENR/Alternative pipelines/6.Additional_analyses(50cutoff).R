@@ -269,6 +269,96 @@ comorb.dm <- rbind(dm_grp, dm_grp.m, dm_grp.f)
 
 rm(impF)
 
+
+# ============================================================================ #
+####################### ADDITIONAL (3): NO PRENATAL STRESS #####################
+# ============================================================================ #
+
+library(dplyr)
+
+# convert imputations into a long dataframe
+long <- mice::complete(imp, action = "long", include = TRUE) 
+
+longP <- long[long$prenatal_stress < 0.001, ]
+longP <- longP[rowSums(is.na(longP)) != ncol(longP), ]
+
+ns = c()
+for (n_imp in unique(longP$.imp)) {
+  dset = longP[longP$.imp == n_imp, ] # one iteration only
+  message(paste("Imputation nr: ", n_imp, ' ~~ ', nrow(dset)))
+  print(summary(dset$post_life_events))
+  print(summary(dset$post_contextual_risk))
+  print(summary(dset$post_parental_risk))
+  print(summary(dset$post_interpersonal_risk))
+  print(summary(dset$post_direct_victimization))
+  ns <- append(ns, nrow(dset))
+}
+mn <- mean(ns[2:31])
+
+est_int_pre <- longP %>%
+  by(as.factor(.$.imp), lm, formula = intern_score_13_z ~ postnatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+  pool() %>%
+  summary()
+
+rsq_int_pre <- longP %>%
+  by(as.factor(.$.imp), lm, formula = intern_score_13_z ~ postnatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+  as.mira() %>%
+  pool.r.squared(adjusted=T)
+
+est_int_pre$rsq <- c(rsq_int_pre[1], rep(NA, nrow(est_int_pre)-1))
+est_int_pre$N <- c(mn, rep(NA, nrow(est_int_pre)-1))
+
+est_fat_pre <- longP %>%
+  by(as.factor(.$.imp), lm, formula = tot_fat_percent_13_z ~ postnatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+  pool() %>% 
+  summary()
+
+rsq_fat_pre <- longP %>%
+  by(as.factor(.$.imp), lm, formula = tot_fat_percent_13_z ~ postnatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+  as.mira() %>%
+  pool.r.squared(adjusted=T)
+
+est_fat_pre$rsq <- c(rsq_fat_pre[1], rep(NA, nrow(est_fat_pre)-1))
+est_fat_pre$N <- c(mn, rep(NA, nrow(est_fat_pre)-1))
+
+modls <- list("nopre_intern" = est_int_pre,"nopre_fatmas" = est_fat_pre)
+openxlsx::write.xlsx(modls, file = file.path(dirname, paste0(Sys.Date(), "_nopre_Results.xlsx")), overwrite = T)
+
+# ============================================================================ #
+####################### ADDITIONAL (3): NO POSTNATAL STRESS ####################
+# ============================================================================ #
+
+# longN <- long[long$postnatal_stress < 0.2, ]
+# longN <- longN[rowSums(is.na(longN)) != ncol(longN), ]
+# 
+# for (n_imp in unique(longN$.imp)) {
+#   dset = longN[longN$.imp == n_imp, ] # one iteration only
+#   message(paste("Imputation nr: ", n_imp, ' ~~ ', nrow(dset)))
+# }
+# 
+# est_int_pos <- longN %>%
+#   by(as.factor(.$.imp), lm, formula = intern_score_13_z ~ prenatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+#   pool.r.squared()
+#   pool()
+#   
+# rsq_int_pos <- longN %>%
+#     by(as.factor(.$.imp), lm, formula = intern_score_13_z ~ prenatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+#     as.mira() %>%
+#     pool.r.squared()
+# 
+# summary(est_int_pos)
+# 
+# est_fat_pos <- longN %>%
+#   by(as.factor(.$.imp), lm, formula = tot_fat_percent_13_z ~ prenatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+#   pool()
+# 
+# rsq_fat_pos <- longN %>%
+#   by(as.factor(.$.imp), lm, formula = tot_fat_percent_13_z ~ prenatal_stress_z + sex + age_child + ethnicity + m_bmi_before_pregnancy + m_smoking + m_drinking) %>%
+#   as.mira() %>%
+#   pool.r.squared()
+# 
+# summary(est_fat_pos)
+
 # ============================================================================ #
 # ============================================================================ #
 # Save results into two excel files

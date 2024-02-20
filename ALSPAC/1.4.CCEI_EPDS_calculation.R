@@ -184,20 +184,20 @@ M_DEP$m_EPDS_total_8ya_rec <- ifelse(M_DEP_8Y$sumscore > 12, 1, 0)
 
 # Dichotomising postnatal items for "had depression"
 M_DEP_selfr <- dichotomize(
-  vars = c("f021",   # 8m
-           "g021",   # 21m
-           "h013",   # 3y
-           "j012",   # 4y
-           "k1011",  # 5y
-           "l3011",  # 6y
-           "p1011"), # 9y
-  yes = c("Y saw DR",               "Y did not see DR", 
-          "Yes & saw Dr",           "Yes,Did not see  Dr", 
-          "yes and saw doctor",     "yes didnt see doctor", 
-          "Yes & saw DR",           "Yes didnt see DR", 
-          "Yes, consulted doctor",  "Yes, did not consult doctor", 
-          "Yes & consulted doctor", "Yes but did not consult doctor"),
-  no = c("N","No","no")  
+  vars = c('f021',   # 8m
+           'g021',   # 21m
+           'h013',   # 3y
+           'j012',   # 4y
+           'k1011',  # 5y
+           'l3011',  # 6y
+           'p1011'), # 9y
+  yes = c('Y saw DR',               'Y did not see DR', 
+          'Yes & saw Dr',           'Yes,Did not see  Dr', 
+          'yes and saw doctor',     'yes didnt see doctor', 
+          'Yes & saw DR',           'Yes didnt see DR', 
+          'Yes, consulted doctor',  'Yes, did not consult doctor', 
+          'Yes & consulted doctor', 'Yes but did not consult doctor'),
+  no = c('N','No','no')  
 )
 
 ## PARTNER DEPRESSION - EPDS ###################################################

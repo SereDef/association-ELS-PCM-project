@@ -41,7 +41,7 @@ ELSPCM_essentials <- ELSPCM[, c('IDC',
                      # cumulative prenatal and postnatal stress exposure
                     'prenatal_stress', 'postnatal_stress',
                      # outcome variables and covariates + additional auxiliary variables for imputation
-                    outcomes_13y, outcomes_09y, covars, auxil, exclusion_criteria)]
+                    outcomes_13y, outcomes_09y, covars, 'ethn_cont', auxil, exclusion_criteria)]
 
 siblings_to_exclude <- flowchart(ELSPCM_essentials)
 
@@ -93,7 +93,7 @@ predictormatrix[c(pre_LE, pre_CR, pre_PR, pre_IR,# all variables for prenatal ri
                ### Impute auxiliary variables and covariates ###
 # To prevent multicollinearity, auxiliary variables are imputed given the domain scores 
 # and the outcomes, but not the single items.
-predictormatrix[c(outcomes_09y, covars, auxil),
+predictormatrix[c(outcomes_09y, covars, 'ethn_cont', auxil),
                 c(pre_LE, pre_CR, pre_PR, pre_IR, # all variables for prenatal risk
                   post_LE, post_CR, post_PR, post_IR, post_DV, # all variables for postnatal risk
                   'prenatal_stress', 'postnatal_stress',

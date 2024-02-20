@@ -131,16 +131,21 @@ drinking <- data.frame('IDM' = drinkingv1$idm,
 child_general <- readquick("CHILD-ALLGENERALDATA_07072020.sav") # 9901 obs of 122 
 
 # Ethnicity recode – dichotomized into: dutch and non-dutch;
-child_general$ethnicity <- ifelse(is.na(child_general$ethnfv2), NA,
-                                        ifelse(child_general$ethnfv2 == 1, 0, 1))  # Dutch = 0, non-Dutch = 1
-                           # American, western (300) Asian, western (500) European (700), Oceanie (800)
+child_general$ethnicity <- ifelse(is.na(child_general$ethninfv2), NA,
+                                        ifelse(child_general$ethninfv2 %in% c(1,300,500,700), 1, 0))  
+                           # Dutch (1), American, western (300), Asian, western (500), European (700) = 1
                            # Indonesian (2), Cape Verdian (3), Maroccan (4) Dutch Antilles (5) Surinamese 
-                           # (6) Turkish (7) African (200), American, non western (400), Asian, non western (600)
-
+                           # (6) Turkish (7) African (200), American, non western (400), Asian, non western (600), Oceanie (800)
+child_general$ethn_cont <- as.factor(child_general$ethninfv2)
+levels(child_general$ethn_cont) <- c('Dutch','Indonesian','Cape Verdian','Maroccan','Dutch Antilles','Surinamese',
+                                     'Turkish','African','American, western','American, non western','Asian, western',
+                                     'Asian, non western','European','Oceanie')
+  
 general_cov_aux <- data.frame('IDC' = child_general$idc, 
                               'IDM' = child_general$idm,
                               'sex' = as.factor(child_general$gender),    ### 1 = boy; 2 = girl.
-                        'ethnicity' = as.factor(child_general$ethnicity), ### 0 = Dutch, 1 = non-Dutch
+                        'ethnicity' = as.factor(child_general$ethnicity), ### 0 = western, 1 = non-western
+                        'ethn_cont' = child_general$ethn_cont,
            'm_bmi_before_pregnancy' = child_general$bmi_0,     ### self-reported Maternal BMI
                              'twin' = child_general$twin,      # (exclusion criteria)
                            'mother' = child_general$mother,    # mother id used to identify siblings (for exclusion)
